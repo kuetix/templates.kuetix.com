@@ -1,0 +1,45 @@
+package transitions
+
+import (
+	"github.com/kuetix/engine/pkg/domain"
+	"github.com/kuetix/engine/pkg/domain/interfaces"
+	"github.com/kuetix/engine/pkg/workflow"
+)
+
+type {{.ModuleName}}Transitions struct {
+	workflow.BaseServiceTransition
+}
+
+func New{{.ModuleNamePascal}}Transitions() interfaces.ServiceTransitions {
+	return &{{.ModuleName}}Transitions{}
+}
+
+// Execute is an example transition method that returns success
+func (t *{{.ModuleName}}Transitions) Execute(message string) (r domain.FlowStepResult) {
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"message": message,
+		"status":  "executed",
+	}
+	return
+}
+
+// Process is an example transition method with validation
+func (t *{{.ModuleName}}Transitions) Process(value int, threshold int) (r domain.FlowStepResult) {
+	if value < threshold {
+		r.Success = false
+		r.Response = map[string]interface{}{
+			"error": "value below threshold",
+			"value": value,
+			"threshold": threshold,
+		}
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"result": "processed",
+		"value": value,
+	}
+	return
+}

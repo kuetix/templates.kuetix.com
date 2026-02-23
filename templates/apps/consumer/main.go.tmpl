@@ -1,0 +1,103 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/kuetix/engine"
+	"github.com/kuetix/engine/boot"
+	"github.com/kuetix/engine/modules"
+	"github.com/kuetix/engine/pkg/domain"
+)
+
+var Version string
+var BuildTime string
+
+func main() {
+	amqpURL := flag.String("amqp", "amqp://guest:guest@localhost:5672/", "AMQP connection URL")
+	queue := flag.String("queue", "{{.ProjectName}}-queue", "Queue name to consume")
+	workflow := flag.String("workflow", "", "Workflow to execute for each message")
+	flag.Parse()
+
+	modules.Enable()
+
+	if *workflow == "" {
+		fmt.Println("Error: --workflow is required")
+		os.Exit(1)
+	}
+
+	// Initialize engine environment
+	boot.InitializeEnvironment(&boot.Options{
+		Version:    Version,
+		BuildTime:  BuildTime,
+		EngineName: "{{.ProjectName}}-consumer",
+		ConfigName: "engine",
+		Config:     &domain.Config{},
+		Verbose:    true,
+	})
+
+	log.Printf("Starting AMQP consumer...")
+	log.Printf("  AMQP URL: %s", *amqpURL)
+	log.Printf("  Queue: %s", *queue)
+	log.Printf("  Workflow: %s", *workflow)
+
+	// TODO: Implement AMQP consumer
+	// This is a placeholder for AMQP consumer logic
+	// You'll need to add github.com/streadway/amqp dependency
+	
+	/*
+	conn, err := amqp.Dial(*amqpURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to AMQP: %v", err)
+	}
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	if err != nil {
+		log.Fatalf("Failed to open channel: %v", err)
+	}
+	defer ch.Close()
+
+	msgs, err := ch.Consume(*queue, "", false, false, false, false, nil)
+	if err != nil {
+		log.Fatalf("Failed to register consumer: %v", err)
+	}
+
+	go func() {
+		for msg := range msgs {
+			log.Printf("Received message: %s", msg.Body)
+			
+			response := engine.RunWorkflow(&boot.Options{
+				Version:    Version,
+				BuildTime:  BuildTime,
+				EngineName: "{{.ProjectName}}-consumer",
+				ConfigName: "engine",
+				Config:     &domain.Config{},
+				Workflow:   *workflow,
+				Amount:     1,
+			})
+
+			// Process response and acknowledge message
+			if len(response) > 0 && response[0].Error == nil {
+				msg.Ack(false)
+			} else {
+				msg.Nack(false, true)
+			}
+		}
+	}()
+	*/
+
+	log.Println("Consumer started. Press Ctrl+C to exit")
+
+	// Wait for interrupt signal
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	<-sigChan
+
+	log.Println("Shutting down consumer...")
+	engine.ShutdownEngine()
+}

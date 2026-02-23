@@ -1,0 +1,79 @@
+package main
+
+import (
+	"flag"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/kuetix/engine"
+	"github.com/kuetix/engine/boot"
+	"github.com/kuetix/engine/modules"
+	"github.com/kuetix/engine/pkg/domain"
+)
+
+var Version string
+var BuildTime string
+
+func main() {
+	workflow := flag.String("workflow", "", "Workflow to execute periodically")
+	interval := flag.Duration("interval", 60*time.Second, "Execution interval")
+	flag.Parse()
+
+	modules.Enable()
+
+	// Initialize engine environment
+	boot.InitializeEnvironment(&boot.Options{
+		Version:    Version,
+		BuildTime:  BuildTime,
+		EngineName: "{{.ProjectName}}-service",
+		ConfigName: "engine",
+		Config:     &domain.Config{},
+		Verbose:    true,
+	})
+
+	log.Printf("Starting service daemon...")
+	log.Printf("  Workflow: %s", *workflow)
+	log.Printf("  Interval: %s", *interval)
+
+	// Create ticker for periodic execution
+	ticker := time.NewTicker(*interval)
+	defer ticker.Stop()
+
+	// Setup signal handling
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	// Service loop
+	for {
+		select {
+		case <-ticker.C:
+			if *workflow != "" {
+				log.Printf("Executing workflow: %s", *workflow)
+				response := engine.RunWorkflow(&boot.Options{
+					Version:    Version,
+					BuildTime:  BuildTime,
+					EngineName: "{{.ProjectName}}-service",
+					ConfigName: "engine",
+					Config:     &domain.Config{},
+					Workflow:   *workflow,
+					Amount:     1,
+				})
+
+				for _, res := range response {
+					if res.Error != nil {
+						log.Printf("Workflow error: %v", res.Error)
+					} else {
+						log.Printf("Workflow completed successfully")
+					}
+				}
+			}
+		case <-sigChan:
+			log.Println("Shutting down service...")
+			engine.ShutdownEngine()
+			return
+		}
+	}
+}

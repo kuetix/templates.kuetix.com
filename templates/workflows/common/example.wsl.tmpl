@@ -1,0 +1,20 @@
+module {{.ProjectName}}
+
+import services/common
+
+// {{.WorkflowNamePascal}} workflow - custom workflow implementation
+workflow {{.WorkflowName}} {
+  start: Execute
+
+  state Execute {
+    action services/common/response.ResponseValue(
+      value: "{{.WorkflowNamePascal}} workflow executed",
+      statusCode: 200
+    ) as result
+    on success -> End
+  }
+
+  state End {
+    end ok
+  }
+}

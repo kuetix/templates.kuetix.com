@@ -1,0 +1,52 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+	"os"
+
+	"github.com/kuetix/engine"
+	"github.com/kuetix/engine/boot"
+	"github.com/kuetix/engine/modules"
+	"github.com/kuetix/engine/pkg/domain"
+)
+
+var Version string
+var BuildTime string
+
+func main() {
+	workflow := flag.String("workflow", "", "Workflow to execute")
+	verbose := flag.Bool("verbose", false, "Verbose mode")
+	flag.Parse()
+
+	modules.Enable()
+
+	if *workflow == "" {
+		fmt.Printf("Usage: %s --workflow <workflow_name>\n", os.Args[0])
+		os.Exit(1)
+	}
+
+	response := engine.RunWorkflow(&boot.Options{
+		Version:    Version,
+		BuildTime:  BuildTime,
+		EngineName: "{{.ProjectName}}-cli",
+		ConfigName: "engine",
+		Config:     &domain.Config{},
+		Workflow:   *workflow,
+		Verbose:    *verbose,
+		Amount:     1,
+		Args:       flag.Args(),
+	})
+
+	for _, res := range response {
+		if res.Error != nil {
+			fmt.Printf("Error: %s\n", res.Error)
+			os.Exit(1)
+		}
+		if res.Response != nil {
+			fmt.Printf("Result: %v\n", res.Response)
+		}
+	}
+
+	engine.ShutdownEngine()
+}
