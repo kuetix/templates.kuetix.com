@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
 cd /opt/kuetix/templates/ || exit
-TAG_VERSION="0.1.0"
+TAG_VERSION=$(/usr/bin/ls -1dv v* 2>&1 | grep -v "No such file or directory" | tail -n 1 | sed "s/.tar.gz//" | tr -d "v")
+if [ "${TAG_VERSION}" == "" ]; then
+  echo "No version found, exiting."
+  exit 1
+fi
 TAG="v${TAG_VERSION}"
 REPO="kuetix/templates.kuetix.com"
 
