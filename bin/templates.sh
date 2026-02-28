@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd /opt/kuetix/templates/
+cd /opt/kuetix/templates/ || exit
 TAG_VERSION="0.1.0"
 TAG="v${TAG_VERSION}"
 REPO="kuetix/templates.kuetix.com"
