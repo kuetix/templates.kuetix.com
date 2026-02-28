@@ -1,0 +1,8 @@
+// {{.Method}} {{.MethodDescription}}
+func (t *{{.ModuleName}}Transitions) {{.Method}}() (r domain.FlowStepResult) {
+	r.Success = true
+	r.Response = map[string]interface{}{
+        "result": fmt.Sprintf("Executed %s", "{{.Method}}"),
+    }
+	return
+}
