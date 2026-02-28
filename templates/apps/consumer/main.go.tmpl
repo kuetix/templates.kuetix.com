@@ -8,9 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"{{.ProjectName}}/modules"
+
 	"github.com/kuetix/engine"
 	"github.com/kuetix/engine/boot"
-	"github.com/kuetix/engine/modules"
 	"github.com/kuetix/engine/pkg/domain"
 )
 
@@ -48,7 +49,7 @@ func main() {
 	// TODO: Implement AMQP consumer
 	// This is a placeholder for AMQP consumer logic
 	// You'll need to add github.com/streadway/amqp dependency
-	
+
 	/*
 	conn, err := amqp.Dial(*amqpURL)
 	if err != nil {
@@ -70,7 +71,7 @@ func main() {
 	go func() {
 		for msg := range msgs {
 			log.Printf("Received message: %s", msg.Body)
-			
+
 			response := engine.RunWorkflow(&boot.Options{
 				Version:    Version,
 				BuildTime:  BuildTime,
