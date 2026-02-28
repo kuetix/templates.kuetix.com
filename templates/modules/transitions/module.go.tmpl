@@ -1,0 +1,17 @@
+package transitions
+
+import (
+	"fmt"
+
+	"github.com/kuetix/engine/pkg/domain"
+	"github.com/kuetix/engine/pkg/domain/interfaces"
+	"github.com/kuetix/engine/pkg/workflow"
+)
+
+type {{.ModuleName}}Transitions struct {
+	workflow.BaseServiceTransition
+}
+
+func New{{.ModuleNamePascal}}Transitions() interfaces.ServiceTransitions {
+	return &{{.ModuleName}}Transitions{}
+}
