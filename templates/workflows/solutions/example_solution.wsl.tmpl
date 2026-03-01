@@ -1,32 +1,19 @@
-module {{.ProjectName}}
+module {{.SolutionName}}
 
 import services/common
 
-// {{.SolutionNamePascal}} solution - high-level orchestration
+const {
+    event: "{{.SolutionName}}",
+    description: "{{.SolutionNamePascal}} solution",
+    version: "0.1.0",
+    enabled: true
+}
+
 solution {{.SolutionName}} {
-  start: Setup
+  start: InitialState
 
-  state Setup {
-    action services/common/response.ResponseValue(
-      value: "{{.SolutionNamePascal}} setup",
-      statusCode: 200
-    ) as setup_result
-    on success -> Execute
-  }
-
-  state Execute {
-    action services/common/response.ResponseValue(
-      value: "{{.SolutionNamePascal}} executing",
-      statusCode: 200
-    ) as exec_result
-    on success -> Finalize
-  }
-
-  state Finalize {
-    action services/common/response.ResponseValue(
-      value: "{{.SolutionNamePascal}} completed",
-      statusCode: 200
-    ) as result
+  state InitialState {
+    action services/common/response.ResponseValue(value: "InitialState", statusCode: 200) as InitialResult
     end ok
   }
 }

@@ -1,20 +1,24 @@
-module {{.ProjectName}}
+module {{.WorkflowName}}
 
 import services/common
 
-// {{.WorkflowNamePascal}} workflow - custom workflow implementation
-workflow {{.WorkflowName}} {
-  start: Execute
+const {
+    event: "{{.WorkflowName}}",
+    description: "{{.WorkflowNamePascal}} workflow",
+    version: "0.1.0",
+    enabled: true
+}
 
-  state Execute {
-    action services/common/response.ResponseValue(
-      value: "{{.WorkflowNamePascal}} workflow executed",
-      statusCode: 200
-    ) as result
-    on success -> End
+workflow {{.WorkflowName}} {
+  start: InitialState
+
+  state InitialState {
+    action services/common/response.ResponseValue(value: "InitialState", statusCode: 200) as InitialResult
+    on success -> FinalState
   }
 
-  state End {
+  state FinalState {
+    action services/common/response.ResponseValue(value: "FinalState", statusCode: 200) as FinalResult
     end ok
   }
 }

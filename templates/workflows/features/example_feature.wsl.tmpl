@@ -1,32 +1,24 @@
-module {{.ProjectName}}
+module {{.FeatureName}}
 
 import services/common
 
-// {{.FeatureNamePascal}} feature - orchestrates workflows
+const {
+    event: "{{.FeatureName}}",
+    description: "{{.FeatureNamePascal}} feature",
+    version: "0.1.0",
+    enabled: true
+}
+
 feature {{.FeatureName}} {
-  start: Initialize
+  start: InitialState
 
-  state Initialize {
-    action services/common/response.ResponseValue(
-      value: "{{.FeatureNamePascal}} initialized",
-      statusCode: 200
-    ) as init_result
-    on success -> Process
+  state InitialState(input) {
+    action services/common/response.ResponseValue(value: "InitialState", statusCode: 200) as InitialResult
+    on success -> FinalState(InitialResult)
   }
 
-  state Process {
-    action services/common/response.ResponseValue(
-      value: "{{.FeatureNamePascal}} processing",
-      statusCode: 200
-    ) as process_result
-    on success -> Complete
-  }
-
-  state Complete {
-    action services/common/response.ResponseValue(
-      value: "{{.FeatureNamePascal}} completed successfully",
-      statusCode: 200
-    ) as result
+  state FinalState(InitialResult) {
+    action services/common/response.ResponseValue(value: "FinalState", statusCode: 200) as FinalResult
     end ok
   }
 }
