@@ -13,6 +13,7 @@ import (
 	"github.com/kuetix/engine"
 	"github.com/kuetix/engine/boot"
 	"github.com/kuetix/engine/pkg/domain"
+	engineModule "github.com/kuetix/engine/modules"
 )
 
 var Version string
@@ -23,6 +24,7 @@ func main() {
 	interval := flag.Duration("interval", 60*time.Second, "Execution interval")
 	flag.Parse()
 
+	engineModule.Enable()
 	modules.Enable()
 
 	// Initialize engine environment

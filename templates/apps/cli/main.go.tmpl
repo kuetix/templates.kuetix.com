@@ -10,6 +10,7 @@ import (
 	"github.com/kuetix/engine"
 	"github.com/kuetix/engine/boot"
 	"github.com/kuetix/engine/pkg/domain"
+	engineModule "github.com/kuetix/engine/modules"
 )
 
 var Version string
@@ -20,6 +21,7 @@ func main() {
 	verbose := flag.Bool("verbose", false, "Verbose mode")
 	flag.Parse()
 
+	engineModule.Enable()
 	modules.Enable()
 
 	if *workflow == "" {
