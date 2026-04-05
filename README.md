@@ -19,7 +19,7 @@ templates/
 │   ├── docker-compose.yml.tmpl
 │   ├── gitignore.tmpl
 │   ├── go.mod.tmpl
-│   ├── package.json.tmpl
+│   ├── kuetix.json.tmpl
 │   └── runner.sh.tmpl
 ├── modules/           # Module templates
 │   └── transitions/   # Transition module templates
@@ -50,7 +50,7 @@ When initializing a new project, the following files are generated:
 
 ### For Package Type
 - **Workflows**: Example workflow, feature, and solution files
-- **Package metadata**: package.json for package management
+- **Package metadata**: kuetix.json for package management
 
 ### For Specific App Types
 - **CLI**: Command-line application in cmd/cli/main.go
