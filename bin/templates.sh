@@ -1,18 +1,21 @@
 #!/usr/bin/env bash
 
+REPO="kuetix/templates.kuetix.com"
 ROOT_DIR="/opt/kuetix/templates/"
 if [ ! -d "${ROOT_DIR}" ]; then
   echo "Directory ${ROOT_DIR} does not exist, exiting."
   exit 1
 fi
 cd "${ROOT_DIR}" || exit
-TAG_VERSION=$(/usr/bin/ls -1dv v* 2>&1 | grep -v "No such file or directory" | tail -n 1 | sed "s/.tar.gz//" | tr -d "v")
-if [ "${TAG_VERSION}" == "" ]; then
-  echo "No version found, exiting."
-  exit 1
+TAG_VERSION=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | jq -r '.tag_name' | tr -d "v")
+if [ "${TAG_VERSION}" == "null" ] || [ "${TAG_VERSION}" == "" ]; then
+  TAG_VERSION=$(/usr/bin/ls -1dv v* 2>&1 | grep -v "No such file or directory" | tail -n 1 | sed "s/.tar.gz//" | tr -d "v")
+  if [ "${TAG_VERSION}" == "" ]; then
+    echo "No version found, exiting."
+    exit 1
+  fi
 fi
 TAG="v${TAG_VERSION}"
-REPO="kuetix/templates.kuetix.com"
 
 curl -fL "https://github.com/${REPO}/archive/refs/tags/${TAG}.tar.gz" -o "${TAG}.tar.gz" -# || true
 #
