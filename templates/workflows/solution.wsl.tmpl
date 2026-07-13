@@ -1,0 +1,19 @@
+module {{.SolutionName}}
+
+import services/common
+
+const {
+    event: "{{.SolutionName}}",
+    description: "{{.SolutionNamePascal}} solution",
+    version: "0.1.0",
+    enabled: true
+}
+
+solution {{.SolutionName}} {
+  start: InitialState
+
+  state InitialState {
+    action services/common/response.ResponseValue(value: "InitialState", statusCode: 200) as InitialResult
+    end ok
+  }
+}

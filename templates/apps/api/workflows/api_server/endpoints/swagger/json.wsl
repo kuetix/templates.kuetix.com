@@ -1,0 +1,25 @@
+module api_server_endpoint_swagger_file
+
+import api/http
+
+workflow startup {
+  start: SwaggerYaml
+
+  state SwaggerYaml {
+    action api/http/http.AFileResponse(
+      path: "docs/swagger.json",
+      contentType: "application/json",
+      cacheControl: "no-cache"
+    ) as SwaggerResult
+    on error -> Failed
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: "Failed to start API server",
+      statusCode: 500
+    ) as ErrorResult
+    end fail
+  }
+}

@@ -1,0 +1,52 @@
+module studio_api
+
+import studio/api
+
+const {
+    event: "studio_api",
+    description: "Studio API workflow for managing workflows and transitions",
+    version: "1.0.0",
+    enabled: true,
+    cfg: {
+        apiKey: "studio-api-key-example",
+        projectId: "kapi-project"
+    }
+}
+
+workflow studio_config {
+  start: GetConfig
+
+  state GetConfig {
+    action studio/api/studio.GetStudioConfig() as Config
+    on success -> ValidateAccess
+  }
+
+  state ValidateAccess {
+    action studio/api/studio.ValidateStudioAccess(apiKey: $constants.cfg.apiKey) as AccessResult
+    on success -> GetMetadata
+  }
+
+  state GetMetadata {
+    action studio/api/studio.GetStudioMetadata(projectId: $constants.cfg.projectId) as Metadata
+    on success -> FinalState
+  }
+
+  state FinalState {
+    action services/common/response.Response(value: "Studio API initialized successfully", statusCode: 200) as Result
+    end ok
+  }
+}
+
+workflow studio_validate {
+  start: Validate
+
+  state Validate {
+    action studio/api/studio.ValidateStudioAccess(apiKey: $constants.cfg.apiKey) as ValidationResult
+    on success -> Success
+  }
+
+  state Success {
+    action services/common/response.Response(value: "Access validated", statusCode: 200) as Result
+    end ok
+  }
+}

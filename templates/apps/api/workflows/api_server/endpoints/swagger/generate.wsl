@@ -1,0 +1,30 @@
+# "Generate OpenAPI/Swagger documentation from routes.wsl"
+
+workflow generate {
+  start: GenerateSwagger
+
+  state GenerateSwagger {
+    action swagger/file/file.GenerateSwagger(
+      name: $json.name,
+      version: $json.version
+    ) as SwaggerResult
+    on success -> Respond
+    on error -> Failed
+  }
+
+  state Respond {
+    action services/common/response.Response(
+      value: $SwaggerResult.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 500
+    ) as ErrorResponse
+    end fail
+  }
+}

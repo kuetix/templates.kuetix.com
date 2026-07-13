@@ -1,0 +1,25 @@
+workflow list_templates {
+  start: ListTemplates
+
+  state ListTemplates {
+    action templates/templates.ListTemplates() as Templates
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $Templates.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 500
+    ) as ErrorResponse
+    end fail
+  }
+}

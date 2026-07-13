@@ -1,0 +1,86 @@
+module orchestration_with_paths
+
+import services/common
+
+const {
+    test_message: "Testing path-based orchestration"
+}
+
+// A simple workflow that can be called
+workflow simple_task {
+  start: Execute
+
+  state Execute {
+    action services/common/response.Response(value: "Task executed", statusCode: 200) as result
+    on success -> End
+  }
+
+  state End {
+    end ok
+  }
+}
+
+// A feature that orchestrates workflows
+feature processing_feature {
+  start: Step1
+
+  state Step1 {
+    action workflow orchestration_with_paths/orchestration_with_paths.simple_task
+    on success -> Complete
+  }
+
+  state Complete {
+    action services/common/response.Response(value: "Feature completed", statusCode: 200) as result
+    end ok
+  }
+}
+
+// A solution that orchestrates features and workflows
+solution complete_solution {
+  start: RunFeature
+
+  state RunFeature {
+    action feature orchestration_with_paths/orchestration_with_paths.processing_feature
+    on success -> RunWorkflow
+  }
+
+  state RunWorkflow {
+    action workflow orchestration_with_paths/orchestration_with_paths.simple_task
+    on success -> Complete
+  }
+
+  state Complete {
+    action services/common/response.Response(value: $constants.test_message, statusCode: 200) as final_result
+    end ok
+  }
+}
+
+// Test workflow that calls solution using path syntax
+workflow test_solution_with_path {
+  start: CallSolution
+
+  state CallSolution {
+    action solution orchestration_with_paths/orchestration_with_paths.complete_solution
+    on success -> Done
+  }
+
+  state Done {
+    action services/common/response.Response(value: "Test completed", statusCode: 200) as result
+    end ok
+  }
+}
+
+// Test workflow that calls feature using path syntax
+workflow test_feature_with_path {
+  start: CallFeature
+
+  state CallFeature {
+    action feature orchestration_with_paths/orchestration_with_paths.processing_feature
+    on success -> Done
+  }
+
+  state Done {
+    action services/common/response.Response(value: "Test completed", statusCode: 200) as result
+    end ok
+  }
+}

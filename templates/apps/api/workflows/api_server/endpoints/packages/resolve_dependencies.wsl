@@ -1,0 +1,28 @@
+workflow resolve_dependencies {
+  start: ResolveDependencies
+
+  state ResolveDependencies {
+    action packages/packages.ResolveDependencies(
+      name: $json.name,
+      version: $json.version
+    ) as DepsResult
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $DepsResult.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 404
+    ) as ErrorResponse
+    end fail
+  }
+}

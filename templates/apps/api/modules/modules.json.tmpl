@@ -1,0 +1,3956 @@
+{
+  "discovery/discovery": {
+    "info": {
+      "go_module": "{{.ProjectName}}",
+      "namespace": "discovery",
+      "class": "discovery",
+      "label": "Discovery Module",
+      "description": "Handles discovery operations for discovery service"
+    },
+    "methods": [
+      {
+        "value": "ListTransitions",
+        "label": "ListTransitions(modulesJsonPath string) (r domain.FlowStepResult)",
+        "names": "ListTransitions(modulesJsonPath) r",
+        "types": "ListTransitions(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/discovery/transitions/discovery.go",
+          "module_path": "modules",
+          "namespace": "discovery",
+          "class": "discovery",
+          "name": "ListTransitions",
+          "receiver_type": "*discoveryTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "modulesJsonPath"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListWorkflows",
+        "label": "ListWorkflows(workflowsPath string, filterType string) (r domain.FlowStepResult)",
+        "names": "ListWorkflows(workflowsPath, filterType) r",
+        "types": "ListWorkflows(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/discovery/transitions/discovery.go",
+          "module_path": "modules",
+          "namespace": "discovery",
+          "class": "discovery",
+          "name": "ListWorkflows",
+          "receiver_type": "*discoveryTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "workflowsPath",
+            "filterType"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListTransitions",
+        "label": "ListTransitions(modulesJsonPath string) (r domain.FlowStepResult)",
+        "names": "ListTransitions(modulesJsonPath) r",
+        "types": "ListTransitions(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/discovery/transitions/discovery.go",
+          "module_path": "modules",
+          "namespace": "discovery",
+          "class": "discovery",
+          "name": "ListTransitions",
+          "receiver_type": "*discoveryTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "modulesJsonPath"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListWorkflows",
+        "label": "ListWorkflows(workflowsPath string, filterType string) (r domain.FlowStepResult)",
+        "names": "ListWorkflows(workflowsPath, filterType) r",
+        "types": "ListWorkflows(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/discovery/transitions/discovery.go",
+          "module_path": "modules",
+          "namespace": "discovery",
+          "class": "discovery",
+          "name": "ListWorkflows",
+          "receiver_type": "*discoveryTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "workflowsPath",
+            "filterType"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      }
+    ]
+  },
+  "docker/docker": {
+    "info": {
+      "go_module": "{{.ProjectName}}",
+      "namespace": "docker",
+      "class": "docker",
+      "label": "Docker Module",
+      "description": "Handles docker operations for docker service"
+    },
+    "methods": [
+      {
+        "value": "BuildImage",
+        "label": "BuildImage(projectPath string, imageName string, imageTag string, buildArgs map[string]string) (r domain.FlowStepResult)",
+        "names": "BuildImage(projectPath, imageName, imageTag, buildArgs) r",
+        "types": "BuildImage(string, string, string, map[string]string) domain.FlowStepResult",
+        "description": "Function with 4 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/docker/transitions/docker.go",
+          "module_path": "modules",
+          "namespace": "docker",
+          "class": "docker",
+          "name": "BuildImage",
+          "receiver_type": "*dockerTransitions",
+          "num_in": 4,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string",
+            "map[string]string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "projectPath",
+            "imageName",
+            "imageTag",
+            "buildArgs"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListImages",
+        "label": "ListImages() (r domain.FlowStepResult)",
+        "names": "ListImages() r",
+        "types": "ListImages() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/docker/transitions/docker.go",
+          "module_path": "modules",
+          "namespace": "docker",
+          "class": "docker",
+          "name": "ListImages",
+          "receiver_type": "*dockerTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "BuildImage",
+        "label": "BuildImage(projectPath string, imageName string, imageTag string, buildArgs map[string]string) (r domain.FlowStepResult)",
+        "names": "BuildImage(projectPath, imageName, imageTag, buildArgs) r",
+        "types": "BuildImage(string, string, string, map[string]string) domain.FlowStepResult",
+        "description": "Function with 4 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/docker/transitions/docker.go",
+          "module_path": "modules",
+          "namespace": "docker",
+          "class": "docker",
+          "name": "BuildImage",
+          "receiver_type": "*dockerTransitions",
+          "num_in": 4,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string",
+            "map[string]string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "projectPath",
+            "imageName",
+            "imageTag",
+            "buildArgs"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "RunWorkflow",
+        "label": "RunWorkflow(imageName string, imageTag string, workflowPath string, environment map[string]string) (r domain.FlowStepResult)",
+        "names": "RunWorkflow(imageName, imageTag, workflowPath, environment) r",
+        "types": "RunWorkflow(string, string, string, map[string]string) domain.FlowStepResult",
+        "description": "Function with 4 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/docker/transitions/docker.go",
+          "module_path": "modules",
+          "namespace": "docker",
+          "class": "docker",
+          "name": "RunWorkflow",
+          "receiver_type": "*dockerTransitions",
+          "num_in": 4,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string",
+            "map[string]string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "imageName",
+            "imageTag",
+            "workflowPath",
+            "environment"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListImages",
+        "label": "ListImages() (r domain.FlowStepResult)",
+        "names": "ListImages() r",
+        "types": "ListImages() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/docker/transitions/docker.go",
+          "module_path": "modules",
+          "namespace": "docker",
+          "class": "docker",
+          "name": "ListImages",
+          "receiver_type": "*dockerTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "RunWorkflow",
+        "label": "RunWorkflow(imageName string, imageTag string, workflowPath string, environment map[string]string) (r domain.FlowStepResult)",
+        "names": "RunWorkflow(imageName, imageTag, workflowPath, environment) r",
+        "types": "RunWorkflow(string, string, string, map[string]string) domain.FlowStepResult",
+        "description": "Function with 4 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/docker/transitions/docker.go",
+          "module_path": "modules",
+          "namespace": "docker",
+          "class": "docker",
+          "name": "RunWorkflow",
+          "receiver_type": "*dockerTransitions",
+          "num_in": 4,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string",
+            "map[string]string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "imageName",
+            "imageTag",
+            "workflowPath",
+            "environment"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      }
+    ]
+  },
+  "files/files": {
+    "info": {
+      "go_module": "{{.ProjectName}}",
+      "namespace": "files",
+      "class": "files",
+      "label": "Files Module",
+      "description": "Handles files operations for files service"
+    },
+    "methods": [
+      {
+        "value": "ReadFile",
+        "label": "ReadFile(filePath string) (r domain.FlowStepResult)",
+        "names": "ReadFile(filePath) r",
+        "types": "ReadFile(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/files/transitions/files.go",
+          "module_path": "modules",
+          "namespace": "files",
+          "class": "files",
+          "name": "ReadFile",
+          "receiver_type": "*filesTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "filePath"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "WriteFile",
+        "label": "WriteFile(filePath string, content string) (r domain.FlowStepResult)",
+        "names": "WriteFile(filePath, content) r",
+        "types": "WriteFile(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/files/transitions/files.go",
+          "module_path": "modules",
+          "namespace": "files",
+          "class": "files",
+          "name": "WriteFile",
+          "receiver_type": "*filesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "filePath",
+            "content"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ReadFile",
+        "label": "ReadFile(filePath string) (r domain.FlowStepResult)",
+        "names": "ReadFile(filePath) r",
+        "types": "ReadFile(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/files/transitions/files.go",
+          "module_path": "modules",
+          "namespace": "files",
+          "class": "files",
+          "name": "ReadFile",
+          "receiver_type": "*filesTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "filePath"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "WriteFile",
+        "label": "WriteFile(filePath string, content string) (r domain.FlowStepResult)",
+        "names": "WriteFile(filePath, content) r",
+        "types": "WriteFile(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/files/transitions/files.go",
+          "module_path": "modules",
+          "namespace": "files",
+          "class": "files",
+          "name": "WriteFile",
+          "receiver_type": "*filesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "filePath",
+            "content"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      }
+    ]
+  },
+  "packages/packages": {
+    "info": {
+      "go_module": "{{.ProjectName}}",
+      "namespace": "packages",
+      "class": "packages",
+      "label": "Packages Module",
+      "description": "Handles packages operations for packages service"
+    },
+    "methods": [
+      {
+        "value": "AddPackage",
+        "label": "AddPackage(data map[string]interface{}, owner string) (r domain.FlowStepResult)",
+        "names": "AddPackage(data, owner) r",
+        "types": "AddPackage(map[string]interface{}, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "AddPackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "map[string]interface{}",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "data",
+            "owner"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "CheckPackageOwnership",
+        "label": "CheckPackageOwnership(repo string, version string, userID string) (r domain.FlowStepResult)",
+        "names": "CheckPackageOwnership(repo, version, userID) r",
+        "types": "CheckPackageOwnership(string, string, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "CheckPackageOwnership",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "repo",
+            "version",
+            "userID"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetDependencies",
+        "label": "GetDependencies(name string, version string) (r domain.FlowStepResult)",
+        "names": "GetDependencies(name, version) r",
+        "types": "GetDependencies(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "GetDependencies",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetGlobalStats",
+        "label": "GetGlobalStats() (r domain.FlowStepResult)",
+        "names": "GetGlobalStats() r",
+        "types": "GetGlobalStats() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "GetGlobalStats",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetPackage",
+        "label": "GetPackage(name string, version string) (r domain.FlowStepResult)",
+        "names": "GetPackage(name, version) r",
+        "types": "GetPackage(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "GetPackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetPackageByModule",
+        "label": "GetPackageByModule(module string, userId string) (r domain.FlowStepResult)",
+        "names": "GetPackageByModule(module, userId) r",
+        "types": "GetPackageByModule(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "GetPackageByModule",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "module",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetPackageStats",
+        "label": "GetPackageStats(name string, version string) (r domain.FlowStepResult)",
+        "names": "GetPackageStats(name, version) r",
+        "types": "GetPackageStats(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "GetPackageStats",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetPackageWithAuth",
+        "label": "GetPackageWithAuth(name string, version string, userID string) (r domain.FlowStepResult)",
+        "names": "GetPackageWithAuth(name, version, userID) r",
+        "types": "GetPackageWithAuth(string, string, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "GetPackageWithAuth",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version",
+            "userID"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "IncrementDownloads",
+        "label": "IncrementDownloads(name string, version string) (r domain.FlowStepResult)",
+        "names": "IncrementDownloads(name, version) r",
+        "types": "IncrementDownloads(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "IncrementDownloads",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "InstallPackage",
+        "label": "InstallPackage(name string, version string, userId string) (r domain.FlowStepResult)",
+        "names": "InstallPackage(name, version, userId) r",
+        "types": "InstallPackage(string, string, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "InstallPackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListPackages",
+        "label": "ListPackages(Token jwt.Token) (r domain.FlowStepResult)",
+        "names": "ListPackages(Token) r",
+        "types": "ListPackages(jwt.Token) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "ListPackages",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "jwt.Token"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "Token"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "AddPackage",
+        "label": "AddPackage(data map[string]interface{}, owner string) (r domain.FlowStepResult)",
+        "names": "AddPackage(data, owner) r",
+        "types": "AddPackage(map[string]interface{}, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "AddPackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "map[string]interface{}",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "data",
+            "owner"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetPackage",
+        "label": "GetPackage(name string, version string) (r domain.FlowStepResult)",
+        "names": "GetPackage(name, version) r",
+        "types": "GetPackage(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "GetPackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "InstallPackage",
+        "label": "InstallPackage(name string, version string, userId string) (r domain.FlowStepResult)",
+        "names": "InstallPackage(name, version, userId) r",
+        "types": "InstallPackage(string, string, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "InstallPackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetPackageByModule",
+        "label": "GetPackageByModule(module string, userId string) (r domain.FlowStepResult)",
+        "names": "GetPackageByModule(module, userId) r",
+        "types": "GetPackageByModule(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "GetPackageByModule",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "module",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListPackages",
+        "label": "ListPackages(Token jwt.Token) (r domain.FlowStepResult)",
+        "names": "ListPackages(Token) r",
+        "types": "ListPackages(jwt.Token) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "ListPackages",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "jwt.Token"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "Token"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "RemovePackage",
+        "label": "RemovePackage(name string, version string) (r domain.FlowStepResult)",
+        "names": "RemovePackage(name, version) r",
+        "types": "RemovePackage(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "RemovePackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ResolveDependencies",
+        "label": "ResolveDependencies(name string, version string) (r domain.FlowStepResult)",
+        "names": "ResolveDependencies(name, version) r",
+        "types": "ResolveDependencies(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "ResolveDependencies",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetDependencies",
+        "label": "GetDependencies(name string, version string) (r domain.FlowStepResult)",
+        "names": "GetDependencies(name, version) r",
+        "types": "GetDependencies(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "GetDependencies",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdateLikes",
+        "label": "UpdateLikes(name string, version string, increment bool) (r domain.FlowStepResult)",
+        "names": "UpdateLikes(name, version, increment) r",
+        "types": "UpdateLikes(string, string, bool) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "UpdateLikes",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "bool"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version",
+            "increment"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdateFollowers",
+        "label": "UpdateFollowers(name string, version string, increment bool) (r domain.FlowStepResult)",
+        "names": "UpdateFollowers(name, version, increment) r",
+        "types": "UpdateFollowers(string, string, bool) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "UpdateFollowers",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "bool"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version",
+            "increment"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "IncrementDownloads",
+        "label": "IncrementDownloads(name string, version string) (r domain.FlowStepResult)",
+        "names": "IncrementDownloads(name, version) r",
+        "types": "IncrementDownloads(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "IncrementDownloads",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetPackageStats",
+        "label": "GetPackageStats(name string, version string) (r domain.FlowStepResult)",
+        "names": "GetPackageStats(name, version) r",
+        "types": "GetPackageStats(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "GetPackageStats",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetGlobalStats",
+        "label": "GetGlobalStats() (r domain.FlowStepResult)",
+        "names": "GetGlobalStats() r",
+        "types": "GetGlobalStats() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "GetGlobalStats",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "PublishPackage",
+        "label": "PublishPackage(name string, version string) (r domain.FlowStepResult)",
+        "names": "PublishPackage(name, version) r",
+        "types": "PublishPackage(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "PublishPackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UnpublishPackage",
+        "label": "UnpublishPackage(name string, version string) (r domain.FlowStepResult)",
+        "names": "UnpublishPackage(name, version) r",
+        "types": "UnpublishPackage(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "UnpublishPackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdatePackagePricing",
+        "label": "UpdatePackagePricing(name string, version string, oneTimePrice float64, subscriptionPrice float64, cloudPrice float64, enterprisePrice float64, currency string) (r domain.FlowStepResult)",
+        "names": "UpdatePackagePricing(name, version, oneTimePrice, subscriptionPrice, cloudPrice, enterprisePrice, currency) r",
+        "types": "UpdatePackagePricing(string, string, float64, float64, float64, float64, string) domain.FlowStepResult",
+        "description": "Function with 7 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "UpdatePackagePricing",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 7,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "float64",
+            "float64",
+            "float64",
+            "float64",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version",
+            "oneTimePrice",
+            "subscriptionPrice",
+            "cloudPrice",
+            "enterprisePrice",
+            "currency"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdatePackageFromJSON",
+        "label": "UpdatePackageFromJSON(packageData map[string]interface{}, owner string) (r domain.FlowStepResult)",
+        "names": "UpdatePackageFromJSON(packageData, owner) r",
+        "types": "UpdatePackageFromJSON(map[string]interface{}, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "UpdatePackageFromJSON",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "map[string]interface{}",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "packageData",
+            "owner"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdatePackage",
+        "label": "UpdatePackage(name string, version string, description string, author string, owner string, license string, repository string, homepage string, documentation string, maintainers []string, keywords []string, categories []string, tags []string, dependencies string, isPrivate bool, status string, buildStatus string, securityScore int, qualityScore int, testCoverage float64, oneTimePrice float64, subscriptionPrice float64, cloudPrice float64, enterprisePrice float64, currency string, modules []string) (r domain.FlowStepResult)",
+        "names": "UpdatePackage(name, version, description, author, owner, license, repository, homepage, documentation, maintainers, keywords, categories, tags, dependencies, isPrivate, status, buildStatus, securityScore, qualityScore, testCoverage, oneTimePrice, subscriptionPrice, cloudPrice, enterprisePrice, currency, modules) r",
+        "types": "UpdatePackage(string, string, string, string, string, string, string, string, string, []string, []string, []string, []string, string, bool, string, string, int, int, float64, float64, float64, float64, float64, string, []string) domain.FlowStepResult",
+        "description": "Function with 26 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "UpdatePackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 26,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "[]string",
+            "[]string",
+            "[]string",
+            "[]string",
+            "string",
+            "bool",
+            "string",
+            "string",
+            "int",
+            "int",
+            "float64",
+            "float64",
+            "float64",
+            "float64",
+            "float64",
+            "string",
+            "[]string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version",
+            "description",
+            "author",
+            "owner",
+            "license",
+            "repository",
+            "homepage",
+            "documentation",
+            "maintainers",
+            "keywords",
+            "categories",
+            "tags",
+            "dependencies",
+            "isPrivate",
+            "status",
+            "buildStatus",
+            "securityScore",
+            "qualityScore",
+            "testCoverage",
+            "oneTimePrice",
+            "subscriptionPrice",
+            "cloudPrice",
+            "enterprisePrice",
+            "currency",
+            "modules"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "SearchPackages",
+        "label": "SearchPackages(query string, filterPrivate string, filterPublished string, sortBy string, sortOrder string, page int, pageSize int, userId string) (r domain.FlowStepResult)",
+        "names": "SearchPackages(query, filterPrivate, filterPublished, sortBy, sortOrder, page, pageSize, userId) r",
+        "types": "SearchPackages(string, string, string, string, string, int, int, string) domain.FlowStepResult",
+        "description": "Function with 8 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "SearchPackages",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 8,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "int",
+            "int",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "query",
+            "filterPrivate",
+            "filterPublished",
+            "sortBy",
+            "sortOrder",
+            "page",
+            "pageSize",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "CheckPackageOwnership",
+        "label": "CheckPackageOwnership(repo string, version string, userID string) (r domain.FlowStepResult)",
+        "names": "CheckPackageOwnership(repo, version, userID) r",
+        "types": "CheckPackageOwnership(string, string, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "CheckPackageOwnership",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "repo",
+            "version",
+            "userID"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetPackageWithAuth",
+        "label": "GetPackageWithAuth(name string, version string, userID string) (r domain.FlowStepResult)",
+        "names": "GetPackageWithAuth(name, version, userID) r",
+        "types": "GetPackageWithAuth(string, string, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "GetPackageWithAuth",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version",
+            "userID"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "PublishPackage",
+        "label": "PublishPackage(name string, version string) (r domain.FlowStepResult)",
+        "names": "PublishPackage(name, version) r",
+        "types": "PublishPackage(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "PublishPackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "RemovePackage",
+        "label": "RemovePackage(name string, version string) (r domain.FlowStepResult)",
+        "names": "RemovePackage(name, version) r",
+        "types": "RemovePackage(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "RemovePackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ResolveDependencies",
+        "label": "ResolveDependencies(name string, version string) (r domain.FlowStepResult)",
+        "names": "ResolveDependencies(name, version) r",
+        "types": "ResolveDependencies(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "ResolveDependencies",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "SearchPackages",
+        "label": "SearchPackages(query string, filterPrivate string, filterPublished string, sortBy string, sortOrder string, page int, pageSize int, userId string) (r domain.FlowStepResult)",
+        "names": "SearchPackages(query, filterPrivate, filterPublished, sortBy, sortOrder, page, pageSize, userId) r",
+        "types": "SearchPackages(string, string, string, string, string, int, int, string) domain.FlowStepResult",
+        "description": "Function with 8 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "SearchPackages",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 8,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "int",
+            "int",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "query",
+            "filterPrivate",
+            "filterPublished",
+            "sortBy",
+            "sortOrder",
+            "page",
+            "pageSize",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UnpublishPackage",
+        "label": "UnpublishPackage(name string, version string) (r domain.FlowStepResult)",
+        "names": "UnpublishPackage(name, version) r",
+        "types": "UnpublishPackage(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "UnpublishPackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdateFollowers",
+        "label": "UpdateFollowers(name string, version string, increment bool) (r domain.FlowStepResult)",
+        "names": "UpdateFollowers(name, version, increment) r",
+        "types": "UpdateFollowers(string, string, bool) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "UpdateFollowers",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "bool"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version",
+            "increment"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdateLikes",
+        "label": "UpdateLikes(name string, version string, increment bool) (r domain.FlowStepResult)",
+        "names": "UpdateLikes(name, version, increment) r",
+        "types": "UpdateLikes(string, string, bool) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "UpdateLikes",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "bool"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version",
+            "increment"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdatePackage",
+        "label": "UpdatePackage(name string, version string, description string, author string, owner string, license string, repository string, homepage string, documentation string, maintainers []string, keywords []string, categories []string, tags []string, dependencies string, isPrivate bool, status string, buildStatus string, securityScore int, qualityScore int, testCoverage float64, oneTimePrice float64, subscriptionPrice float64, cloudPrice float64, enterprisePrice float64, currency string, modules []string) (r domain.FlowStepResult)",
+        "names": "UpdatePackage(name, version, description, author, owner, license, repository, homepage, documentation, maintainers, keywords, categories, tags, dependencies, isPrivate, status, buildStatus, securityScore, qualityScore, testCoverage, oneTimePrice, subscriptionPrice, cloudPrice, enterprisePrice, currency, modules) r",
+        "types": "UpdatePackage(string, string, string, string, string, string, string, string, string, []string, []string, []string, []string, string, bool, string, string, int, int, float64, float64, float64, float64, float64, string, []string) domain.FlowStepResult",
+        "description": "Function with 26 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "UpdatePackage",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 26,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "string",
+            "[]string",
+            "[]string",
+            "[]string",
+            "[]string",
+            "string",
+            "bool",
+            "string",
+            "string",
+            "int",
+            "int",
+            "float64",
+            "float64",
+            "float64",
+            "float64",
+            "float64",
+            "string",
+            "[]string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version",
+            "description",
+            "author",
+            "owner",
+            "license",
+            "repository",
+            "homepage",
+            "documentation",
+            "maintainers",
+            "keywords",
+            "categories",
+            "tags",
+            "dependencies",
+            "isPrivate",
+            "status",
+            "buildStatus",
+            "securityScore",
+            "qualityScore",
+            "testCoverage",
+            "oneTimePrice",
+            "subscriptionPrice",
+            "cloudPrice",
+            "enterprisePrice",
+            "currency",
+            "modules"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdatePackageFromJSON",
+        "label": "UpdatePackageFromJSON(packageData map[string]interface{}, owner string) (r domain.FlowStepResult)",
+        "names": "UpdatePackageFromJSON(packageData, owner) r",
+        "types": "UpdatePackageFromJSON(map[string]interface{}, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "UpdatePackageFromJSON",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "map[string]interface{}",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "packageData",
+            "owner"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdatePackagePricing",
+        "label": "UpdatePackagePricing(name string, version string, oneTimePrice float64, subscriptionPrice float64, cloudPrice float64, enterprisePrice float64, currency string) (r domain.FlowStepResult)",
+        "names": "UpdatePackagePricing(name, version, oneTimePrice, subscriptionPrice, cloudPrice, enterprisePrice, currency) r",
+        "types": "UpdatePackagePricing(string, string, float64, float64, float64, float64, string) domain.FlowStepResult",
+        "description": "Function with 7 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/packages/transitions/packages.go",
+          "module_path": "modules",
+          "namespace": "packages",
+          "class": "packages",
+          "name": "UpdatePackagePricing",
+          "receiver_type": "*packagesTransitions",
+          "num_in": 7,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "float64",
+            "float64",
+            "float64",
+            "float64",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "version",
+            "oneTimePrice",
+            "subscriptionPrice",
+            "cloudPrice",
+            "enterprisePrice",
+            "currency"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      }
+    ]
+  },
+  "profiles/profiles": {
+    "info": {
+      "go_module": "{{.ProjectName}}",
+      "namespace": "profiles",
+      "class": "profiles",
+      "label": "Profiles Module",
+      "description": "Handles profiles operations for profiles service"
+    },
+    "methods": [
+      {
+        "value": "CreateProfile",
+        "label": "CreateProfile(args map[string]interface{}) (r domain.FlowStepResult)",
+        "names": "CreateProfile(args) r",
+        "types": "CreateProfile(map[string]interface{}) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/profiles/transitions/profiles.go",
+          "module_path": "modules",
+          "namespace": "profiles",
+          "class": "profiles",
+          "name": "CreateProfile",
+          "receiver_type": "*profilesTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "map[string]interface{}"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "args"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "DeleteProfile",
+        "label": "DeleteProfile(args map[string]interface{}) (r domain.FlowStepResult)",
+        "names": "DeleteProfile(args) r",
+        "types": "DeleteProfile(map[string]interface{}) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/profiles/transitions/profiles.go",
+          "module_path": "modules",
+          "namespace": "profiles",
+          "class": "profiles",
+          "name": "DeleteProfile",
+          "receiver_type": "*profilesTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "map[string]interface{}"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "args"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetProfile",
+        "label": "GetProfile(userId string) (r domain.FlowStepResult)",
+        "names": "GetProfile(userId) r",
+        "types": "GetProfile(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/profiles/transitions/profiles.go",
+          "module_path": "modules",
+          "namespace": "profiles",
+          "class": "profiles",
+          "name": "GetProfile",
+          "receiver_type": "*profilesTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListProfiles",
+        "label": "ListProfiles() (r domain.FlowStepResult)",
+        "names": "ListProfiles() r",
+        "types": "ListProfiles() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/profiles/transitions/profiles.go",
+          "module_path": "modules",
+          "namespace": "profiles",
+          "class": "profiles",
+          "name": "ListProfiles",
+          "receiver_type": "*profilesTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "CreateProfile",
+        "label": "CreateProfile(args map[string]interface{}) (r domain.FlowStepResult)",
+        "names": "CreateProfile(args) r",
+        "types": "CreateProfile(map[string]interface{}) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/profiles/transitions/profiles.go",
+          "module_path": "modules",
+          "namespace": "profiles",
+          "class": "profiles",
+          "name": "CreateProfile",
+          "receiver_type": "*profilesTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "map[string]interface{}"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "args"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetProfile",
+        "label": "GetProfile(userId string) (r domain.FlowStepResult)",
+        "names": "GetProfile(userId) r",
+        "types": "GetProfile(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/profiles/transitions/profiles.go",
+          "module_path": "modules",
+          "namespace": "profiles",
+          "class": "profiles",
+          "name": "GetProfile",
+          "receiver_type": "*profilesTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdateProfile",
+        "label": "UpdateProfile(userId string, args map[string]interface{}) (r domain.FlowStepResult)",
+        "names": "UpdateProfile(userId, args) r",
+        "types": "UpdateProfile(string, map[string]interface{}) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/profiles/transitions/profiles.go",
+          "module_path": "modules",
+          "namespace": "profiles",
+          "class": "profiles",
+          "name": "UpdateProfile",
+          "receiver_type": "*profilesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "map[string]interface{}"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "userId",
+            "args"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "DeleteProfile",
+        "label": "DeleteProfile(args map[string]interface{}) (r domain.FlowStepResult)",
+        "names": "DeleteProfile(args) r",
+        "types": "DeleteProfile(map[string]interface{}) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/profiles/transitions/profiles.go",
+          "module_path": "modules",
+          "namespace": "profiles",
+          "class": "profiles",
+          "name": "DeleteProfile",
+          "receiver_type": "*profilesTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "map[string]interface{}"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "args"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListProfiles",
+        "label": "ListProfiles() (r domain.FlowStepResult)",
+        "names": "ListProfiles() r",
+        "types": "ListProfiles() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/profiles/transitions/profiles.go",
+          "module_path": "modules",
+          "namespace": "profiles",
+          "class": "profiles",
+          "name": "ListProfiles",
+          "receiver_type": "*profilesTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdateProfile",
+        "label": "UpdateProfile(userId string, args map[string]interface{}) (r domain.FlowStepResult)",
+        "names": "UpdateProfile(userId, args) r",
+        "types": "UpdateProfile(string, map[string]interface{}) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/profiles/transitions/profiles.go",
+          "module_path": "modules",
+          "namespace": "profiles",
+          "class": "profiles",
+          "name": "UpdateProfile",
+          "receiver_type": "*profilesTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "map[string]interface{}"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "userId",
+            "args"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      }
+    ]
+  },
+  "studio/api/studio": {
+    "info": {
+      "go_module": "{{.ProjectName}}",
+      "namespace": "studio/api",
+      "class": "studio",
+      "label": "Studio Module",
+      "description": "Handles studio operations for studio/api service"
+    },
+    "methods": [
+      {
+        "value": "GetStudioConfig",
+        "label": "GetStudioConfig() (r domain.FlowStepResult)",
+        "names": "GetStudioConfig() r",
+        "types": "GetStudioConfig() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/studio/api/transitions/studio.go",
+          "module_path": "modules",
+          "namespace": "studio/api",
+          "class": "studio",
+          "name": "GetStudioConfig",
+          "receiver_type": "*studioTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetStudioMetadata",
+        "label": "GetStudioMetadata(projectId string) (r domain.FlowStepResult)",
+        "names": "GetStudioMetadata(projectId) r",
+        "types": "GetStudioMetadata(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/studio/api/transitions/studio.go",
+          "module_path": "modules",
+          "namespace": "studio/api",
+          "class": "studio",
+          "name": "GetStudioMetadata",
+          "receiver_type": "*studioTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "projectId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetStudioConfig",
+        "label": "GetStudioConfig() (r domain.FlowStepResult)",
+        "names": "GetStudioConfig() r",
+        "types": "GetStudioConfig() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/studio/api/transitions/studio.go",
+          "module_path": "modules",
+          "namespace": "studio/api",
+          "class": "studio",
+          "name": "GetStudioConfig",
+          "receiver_type": "*studioTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ValidateStudioAccess",
+        "label": "ValidateStudioAccess(apiKey string) (r domain.FlowStepResult)",
+        "names": "ValidateStudioAccess(apiKey) r",
+        "types": "ValidateStudioAccess(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/studio/api/transitions/studio.go",
+          "module_path": "modules",
+          "namespace": "studio/api",
+          "class": "studio",
+          "name": "ValidateStudioAccess",
+          "receiver_type": "*studioTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "apiKey"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetStudioMetadata",
+        "label": "GetStudioMetadata(projectId string) (r domain.FlowStepResult)",
+        "names": "GetStudioMetadata(projectId) r",
+        "types": "GetStudioMetadata(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/studio/api/transitions/studio.go",
+          "module_path": "modules",
+          "namespace": "studio/api",
+          "class": "studio",
+          "name": "GetStudioMetadata",
+          "receiver_type": "*studioTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "projectId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ValidateStudioAccess",
+        "label": "ValidateStudioAccess(apiKey string) (r domain.FlowStepResult)",
+        "names": "ValidateStudioAccess(apiKey) r",
+        "types": "ValidateStudioAccess(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/studio/api/transitions/studio.go",
+          "module_path": "modules",
+          "namespace": "studio/api",
+          "class": "studio",
+          "name": "ValidateStudioAccess",
+          "receiver_type": "*studioTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "apiKey"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      }
+    ]
+  },
+  "swagger/file/file": {
+    "info": {
+      "go_module": "{{.ProjectName}}",
+      "namespace": "swagger/file",
+      "class": "file",
+      "label": "File Module",
+      "description": "Handles file operations for swagger/file service"
+    },
+    "methods": [
+      {
+        "value": "GenerateSwagger",
+        "label": "GenerateSwagger() (r domain.FlowStepResult)",
+        "names": "GenerateSwagger() r",
+        "types": "GenerateSwagger() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/swagger/file/transitions/file.go",
+          "module_path": "modules",
+          "namespace": "swagger/file",
+          "class": "file",
+          "name": "GenerateSwagger",
+          "receiver_type": "*swaggerFileTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ServeSwaggerSpec",
+        "label": "ServeSwaggerSpec() (r domain.FlowStepResult)",
+        "names": "ServeSwaggerSpec() r",
+        "types": "ServeSwaggerSpec() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/swagger/file/transitions/file.go",
+          "module_path": "modules",
+          "namespace": "swagger/file",
+          "class": "file",
+          "name": "ServeSwaggerSpec",
+          "receiver_type": "*swaggerFileTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GenerateSwagger",
+        "label": "GenerateSwagger() (r domain.FlowStepResult)",
+        "names": "GenerateSwagger() r",
+        "types": "GenerateSwagger() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/swagger/file/transitions/file.go",
+          "module_path": "modules",
+          "namespace": "swagger/file",
+          "class": "file",
+          "name": "GenerateSwagger",
+          "receiver_type": "*swaggerFileTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ServeSwaggerSpec",
+        "label": "ServeSwaggerSpec() (r domain.FlowStepResult)",
+        "names": "ServeSwaggerSpec() r",
+        "types": "ServeSwaggerSpec() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/swagger/file/transitions/file.go",
+          "module_path": "modules",
+          "namespace": "swagger/file",
+          "class": "file",
+          "name": "ServeSwaggerSpec",
+          "receiver_type": "*swaggerFileTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      }
+    ]
+  },
+  "templates/templates": {
+    "info": {
+      "go_module": "{{.ProjectName}}",
+      "namespace": "templates",
+      "class": "templates",
+      "label": "Templates Module",
+      "description": "Handles templates operations for templates service"
+    },
+    "methods": [
+      {
+        "value": "CreateProject",
+        "label": "CreateProject(templateName string, projectName string, outputPath string, variables map[string]interface{}) (r domain.FlowStepResult)",
+        "names": "CreateProject(templateName, projectName, outputPath, variables) r",
+        "types": "CreateProject(string, string, string, map[string]interface{}) domain.FlowStepResult",
+        "description": "Function with 4 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/templates/transitions/templates.go",
+          "module_path": "modules",
+          "namespace": "templates",
+          "class": "templates",
+          "name": "CreateProject",
+          "receiver_type": "*templatesTransitions",
+          "num_in": 4,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string",
+            "map[string]interface{}"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "templateName",
+            "projectName",
+            "outputPath",
+            "variables"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetProjectTree",
+        "label": "GetProjectTree(projectPath string) (r domain.FlowStepResult)",
+        "names": "GetProjectTree(projectPath) r",
+        "types": "GetProjectTree(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/templates/transitions/templates.go",
+          "module_path": "modules",
+          "namespace": "templates",
+          "class": "templates",
+          "name": "GetProjectTree",
+          "receiver_type": "*templatesTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "projectPath"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListTemplates",
+        "label": "ListTemplates() (r domain.FlowStepResult)",
+        "names": "ListTemplates() r",
+        "types": "ListTemplates() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/templates/transitions/templates.go",
+          "module_path": "modules",
+          "namespace": "templates",
+          "class": "templates",
+          "name": "ListTemplates",
+          "receiver_type": "*templatesTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListTemplates",
+        "label": "ListTemplates() (r domain.FlowStepResult)",
+        "names": "ListTemplates() r",
+        "types": "ListTemplates() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/templates/transitions/templates.go",
+          "module_path": "modules",
+          "namespace": "templates",
+          "class": "templates",
+          "name": "ListTemplates",
+          "receiver_type": "*templatesTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "CreateProject",
+        "label": "CreateProject(templateName string, projectName string, outputPath string, variables map[string]interface{}) (r domain.FlowStepResult)",
+        "names": "CreateProject(templateName, projectName, outputPath, variables) r",
+        "types": "CreateProject(string, string, string, map[string]interface{}) domain.FlowStepResult",
+        "description": "Function with 4 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/templates/transitions/templates.go",
+          "module_path": "modules",
+          "namespace": "templates",
+          "class": "templates",
+          "name": "CreateProject",
+          "receiver_type": "*templatesTransitions",
+          "num_in": 4,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string",
+            "map[string]interface{}"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "templateName",
+            "projectName",
+            "outputPath",
+            "variables"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetProjectTree",
+        "label": "GetProjectTree(projectPath string) (r domain.FlowStepResult)",
+        "names": "GetProjectTree(projectPath) r",
+        "types": "GetProjectTree(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/templates/transitions/templates.go",
+          "module_path": "modules",
+          "namespace": "templates",
+          "class": "templates",
+          "name": "GetProjectTree",
+          "receiver_type": "*templatesTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "projectPath"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      }
+    ]
+  },
+  "user/user": {
+    "info": {
+      "go_module": "{{.ProjectName}}",
+      "namespace": "user",
+      "class": "user",
+      "label": "User Module",
+      "description": "Handles user operations for user service"
+    },
+    "methods": [
+      {
+        "value": "GetAllUsers",
+        "label": "GetAllUsers() (r domain.FlowStepResult)",
+        "names": "GetAllUsers() r",
+        "types": "GetAllUsers() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "GetAllUsers",
+          "receiver_type": "*userTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetUserByEmail",
+        "label": "GetUserByEmail(email string) (r domain.FlowStepResult)",
+        "names": "GetUserByEmail(email) r",
+        "types": "GetUserByEmail(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "GetUserByEmail",
+          "receiver_type": "*userTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "email"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetUserById",
+        "label": "GetUserById(id string) (r domain.FlowStepResult)",
+        "names": "GetUserById(id) r",
+        "types": "GetUserById(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "GetUserById",
+          "receiver_type": "*userTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "id"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "Login",
+        "label": "Login(login string, password string) (r domain.FlowStepResult)",
+        "names": "Login(login, password) r",
+        "types": "Login(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "Login",
+          "receiver_type": "*userTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "login",
+            "password"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "LookupID",
+        "label": "LookupID(key string, email string) (r domain.FlowStepResult)",
+        "names": "LookupID(key, email) r",
+        "types": "LookupID(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "LookupID",
+          "receiver_type": "*userTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "key",
+            "email"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "Register",
+        "label": "Register(email string, password string) (r domain.FlowStepResult)",
+        "names": "Register(email, password) r",
+        "types": "Register(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "Register",
+          "receiver_type": "*userTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "email",
+            "password"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "LookupID",
+        "label": "LookupID(key string, email string) (r domain.FlowStepResult)",
+        "names": "LookupID(key, email) r",
+        "types": "LookupID(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "LookupID",
+          "receiver_type": "*userTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "key",
+            "email"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "Login",
+        "label": "Login(login string, password string) (r domain.FlowStepResult)",
+        "names": "Login(login, password) r",
+        "types": "Login(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "Login",
+          "receiver_type": "*userTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "login",
+            "password"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetUserByEmail",
+        "label": "GetUserByEmail(email string) (r domain.FlowStepResult)",
+        "names": "GetUserByEmail(email) r",
+        "types": "GetUserByEmail(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "GetUserByEmail",
+          "receiver_type": "*userTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "email"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetUserById",
+        "label": "GetUserById(id string) (r domain.FlowStepResult)",
+        "names": "GetUserById(id) r",
+        "types": "GetUserById(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "GetUserById",
+          "receiver_type": "*userTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "id"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetAllUsers",
+        "label": "GetAllUsers() (r domain.FlowStepResult)",
+        "names": "GetAllUsers() r",
+        "types": "GetAllUsers() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "GetAllUsers",
+          "receiver_type": "*userTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ResetPassword",
+        "label": "ResetPassword(email string, newPassword string, newPasswordHash string, requestingUserEmail string, min int) (r domain.FlowStepResult)",
+        "names": "ResetPassword(email, newPassword, newPasswordHash, requestingUserEmail, min) r",
+        "types": "ResetPassword(string, string, string, string, int) domain.FlowStepResult",
+        "description": "Function with 5 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "ResetPassword",
+          "receiver_type": "*userTransitions",
+          "num_in": 5,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string",
+            "string",
+            "int"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "email",
+            "newPassword",
+            "newPasswordHash",
+            "requestingUserEmail",
+            "min"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "RequestPasswordReset",
+        "label": "RequestPasswordReset(email string) (r domain.FlowStepResult)",
+        "names": "RequestPasswordReset(email) r",
+        "types": "RequestPasswordReset(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "RequestPasswordReset",
+          "receiver_type": "*userTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "email"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "Register",
+        "label": "Register(email string, password string) (r domain.FlowStepResult)",
+        "names": "Register(email, password) r",
+        "types": "Register(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "Register",
+          "receiver_type": "*userTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "email",
+            "password"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "RequestPasswordReset",
+        "label": "RequestPasswordReset(email string) (r domain.FlowStepResult)",
+        "names": "RequestPasswordReset(email) r",
+        "types": "RequestPasswordReset(string) domain.FlowStepResult",
+        "description": "Function with 1 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "RequestPasswordReset",
+          "receiver_type": "*userTransitions",
+          "num_in": 1,
+          "num_out": 1,
+          "arg_types": [
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "email"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ResetPassword",
+        "label": "ResetPassword(email string, newPassword string, newPasswordHash string, requestingUserEmail string, min int) (r domain.FlowStepResult)",
+        "names": "ResetPassword(email, newPassword, newPasswordHash, requestingUserEmail, min) r",
+        "types": "ResetPassword(string, string, string, string, int) domain.FlowStepResult",
+        "description": "Function with 5 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/user/transitions/user.go",
+          "module_path": "modules",
+          "namespace": "user",
+          "class": "user",
+          "name": "ResetPassword",
+          "receiver_type": "*userTransitions",
+          "num_in": 5,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string",
+            "string",
+            "int"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "email",
+            "newPassword",
+            "newPasswordHash",
+            "requestingUserEmail",
+            "min"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      }
+    ]
+  },
+  "workflows/workflows": {
+    "info": {
+      "go_module": "{{.ProjectName}}",
+      "namespace": "workflows",
+      "class": "workflows",
+      "label": "Workflows Module",
+      "description": "Handles workflows operations for workflows service"
+    },
+    "methods": [
+      {
+        "value": "CheckWorkflowOwnership",
+        "label": "CheckWorkflowOwnership(name string, userId string) (r domain.FlowStepResult)",
+        "names": "CheckWorkflowOwnership(name, userId) r",
+        "types": "CheckWorkflowOwnership(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "CheckWorkflowOwnership",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "CreateOrUpdateWorkflow",
+        "label": "CreateOrUpdateWorkflow(payload map[string]interface{}, userId string, username string) (r domain.FlowStepResult)",
+        "names": "CreateOrUpdateWorkflow(payload, userId, username) r",
+        "types": "CreateOrUpdateWorkflow(map[string]interface{}, string, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "CreateOrUpdateWorkflow",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "map[string]interface{}",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "payload",
+            "userId",
+            "username"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "CreateWorkflow",
+        "label": "CreateWorkflow(payload map[string]interface{}, userId string, username string) (r domain.FlowStepResult)",
+        "names": "CreateWorkflow(payload, userId, username) r",
+        "types": "CreateWorkflow(map[string]interface{}, string, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "CreateWorkflow",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "map[string]interface{}",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "payload",
+            "userId",
+            "username"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "DeleteWorkflow",
+        "label": "DeleteWorkflow(name string, userId string) (r domain.FlowStepResult)",
+        "names": "DeleteWorkflow(name, userId) r",
+        "types": "DeleteWorkflow(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "DeleteWorkflow",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetWorkflow",
+        "label": "GetWorkflow(name string, userId string) (r domain.FlowStepResult)",
+        "names": "GetWorkflow(name, userId) r",
+        "types": "GetWorkflow(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "GetWorkflow",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetWorkflowPublic",
+        "label": "GetWorkflowPublic(name string, owner string, userId string) (r domain.FlowStepResult)",
+        "names": "GetWorkflowPublic(name, owner, userId) r",
+        "types": "GetWorkflowPublic(string, string, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "GetWorkflowPublic",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "owner",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListWorkflows",
+        "label": "ListWorkflows(userId string, limit int, cursor string) (r domain.FlowStepResult)",
+        "names": "ListWorkflows(userId, limit, cursor) r",
+        "types": "ListWorkflows(string, int, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "ListWorkflows",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "int",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "userId",
+            "limit",
+            "cursor"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "CreateWorkflow",
+        "label": "CreateWorkflow(payload map[string]interface{}, userId string, username string) (r domain.FlowStepResult)",
+        "names": "CreateWorkflow(payload, userId, username) r",
+        "types": "CreateWorkflow(map[string]interface{}, string, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "CreateWorkflow",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "map[string]interface{}",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "payload",
+            "userId",
+            "username"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "CreateOrUpdateWorkflow",
+        "label": "CreateOrUpdateWorkflow(payload map[string]interface{}, userId string, username string) (r domain.FlowStepResult)",
+        "names": "CreateOrUpdateWorkflow(payload, userId, username) r",
+        "types": "CreateOrUpdateWorkflow(map[string]interface{}, string, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "CreateOrUpdateWorkflow",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "map[string]interface{}",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "payload",
+            "userId",
+            "username"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdateWorkflow",
+        "label": "UpdateWorkflow(name string, payload map[string]interface{}, userId string, username string) (r domain.FlowStepResult)",
+        "names": "UpdateWorkflow(name, payload, userId, username) r",
+        "types": "UpdateWorkflow(string, map[string]interface{}, string, string) domain.FlowStepResult",
+        "description": "Function with 4 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "UpdateWorkflow",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 4,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "map[string]interface{}",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "payload",
+            "userId",
+            "username"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetWorkflow",
+        "label": "GetWorkflow(name string, userId string) (r domain.FlowStepResult)",
+        "names": "GetWorkflow(name, userId) r",
+        "types": "GetWorkflow(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "GetWorkflow",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "ListWorkflows",
+        "label": "ListWorkflows(userId string, limit int, cursor string) (r domain.FlowStepResult)",
+        "names": "ListWorkflows(userId, limit, cursor) r",
+        "types": "ListWorkflows(string, int, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "ListWorkflows",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "int",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "userId",
+            "limit",
+            "cursor"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "DeleteWorkflow",
+        "label": "DeleteWorkflow(name string, userId string) (r domain.FlowStepResult)",
+        "names": "DeleteWorkflow(name, userId) r",
+        "types": "DeleteWorkflow(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "DeleteWorkflow",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "CheckWorkflowOwnership",
+        "label": "CheckWorkflowOwnership(name string, userId string) (r domain.FlowStepResult)",
+        "names": "CheckWorkflowOwnership(name, userId) r",
+        "types": "CheckWorkflowOwnership(string, string) domain.FlowStepResult",
+        "description": "Function with 2 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "CheckWorkflowOwnership",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 2,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "SearchWorkflows",
+        "label": "SearchWorkflows(query string, userId string, limit int) (r domain.FlowStepResult)",
+        "names": "SearchWorkflows(query, userId, limit) r",
+        "types": "SearchWorkflows(string, string, int) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "SearchWorkflows",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "int"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "query",
+            "userId",
+            "limit"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "GetWorkflowPublic",
+        "label": "GetWorkflowPublic(name string, owner string, userId string) (r domain.FlowStepResult)",
+        "names": "GetWorkflowPublic(name, owner, userId) r",
+        "types": "GetWorkflowPublic(string, string, string) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "GetWorkflowPublic",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "owner",
+            "userId"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "SyncPublicIndex",
+        "label": "SyncPublicIndex() (r domain.FlowStepResult)",
+        "names": "SyncPublicIndex() r",
+        "types": "SyncPublicIndex() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "SyncPublicIndex",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "SearchWorkflows",
+        "label": "SearchWorkflows(query string, userId string, limit int) (r domain.FlowStepResult)",
+        "names": "SearchWorkflows(query, userId, limit) r",
+        "types": "SearchWorkflows(string, string, int) domain.FlowStepResult",
+        "description": "Function with 3 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "SearchWorkflows",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 3,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "string",
+            "int"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "query",
+            "userId",
+            "limit"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "SyncPublicIndex",
+        "label": "SyncPublicIndex() (r domain.FlowStepResult)",
+        "names": "SyncPublicIndex() r",
+        "types": "SyncPublicIndex() domain.FlowStepResult",
+        "description": "Function with 0 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "SyncPublicIndex",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 0,
+          "num_out": 1,
+          "arg_types": null,
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": null,
+          "return_names": [
+            "r"
+          ]
+        }
+      },
+      {
+        "value": "UpdateWorkflow",
+        "label": "UpdateWorkflow(name string, payload map[string]interface{}, userId string, username string) (r domain.FlowStepResult)",
+        "names": "UpdateWorkflow(name, payload, userId, username) r",
+        "types": "UpdateWorkflow(string, map[string]interface{}, string, string) domain.FlowStepResult",
+        "description": "Function with 4 input(s) and 1 output(s)",
+        "method": {
+          "go_module": "{{.ProjectName}}",
+          "file_path": "modules/workflows/transitions/workflows.go",
+          "module_path": "modules",
+          "namespace": "workflows",
+          "class": "workflows",
+          "name": "UpdateWorkflow",
+          "receiver_type": "*workflowsTransitions",
+          "num_in": 4,
+          "num_out": 1,
+          "arg_types": [
+            "string",
+            "map[string]interface{}",
+            "string",
+            "string"
+          ],
+          "return_types": [
+            "domain.FlowStepResult"
+          ],
+          "arg_names": [
+            "name",
+            "payload",
+            "userId",
+            "username"
+          ],
+          "return_names": [
+            "r"
+          ]
+        }
+      }
+    ]
+  }
+}

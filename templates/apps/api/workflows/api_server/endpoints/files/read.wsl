@@ -1,0 +1,36 @@
+workflow file_read {
+  start: ValidateRequest
+
+  state ValidateRequest {
+    action services/common/assert.Assert(
+      condition: $json.filePath != "",
+      message: "File path is required"
+    ) as Validation
+    on success -> ReadFile
+    on error -> Failed
+  }
+
+  state ReadFile {
+    action files/files.ReadFile(
+      filePath: $json.filePath
+    ) as FileContent
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $FileContent.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 500
+    ) as ErrorResponse
+    end fail
+  }
+}

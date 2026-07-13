@@ -1,0 +1,28 @@
+workflow increment_downloads {
+  start: IncrementDownloads
+
+  state IncrementDownloads {
+    action packages/packages.IncrementDownloads(
+      name: $json.name,
+      version: $json.version
+    ) as DownloadsResult
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $DownloadsResult.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 404
+    ) as ErrorResponse
+    end fail
+  }
+}

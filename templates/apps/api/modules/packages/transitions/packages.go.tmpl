@@ -1,0 +1,1600 @@
+package transitions
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
+
+	jsonDbCache "github.com/anare/simple-json-db-cache"
+	"github.com/go-viper/mapstructure/v2"
+	"{{.ProjectName}}/internal"
+	"github.com/kuetix/engine/engine/domain"
+	"github.com/kuetix/engine/engine/domain/interfaces"
+	"github.com/kuetix/engine/engine/workflow"
+	jwt "github.com/kuetix/std-auth/modules/auth/transitions"
+	"github.com/kuetix/uuid"
+)
+
+type packagesTransitions struct {
+	workflow.BaseServiceTransition
+	dbm  *jsonDbCache.DB
+	pkgs *jsonDbCache.Collection
+}
+
+func NewPackagesTransitions() interfaces.ServiceTransitions {
+	return &packagesTransitions{}
+}
+
+// getItemsDB initializes and returns the database connection
+func (p *packagesTransitions) getItemsDB() (*jsonDbCache.Collection, error) {
+	if p.pkgs != nil {
+		return p.pkgs, nil
+	}
+
+	options := p.Ctx.Engine.GetApplication().Env.Options
+	dbPath := options.Context["dbPath"].(string)
+
+	// Default path if not provided
+	if dbPath == "" {
+		dbPath = "./runtime/data"
+	}
+
+	// Ensure directory exists
+	if err := os.MkdirAll(dbPath, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create database directory: %w", err)
+	}
+
+	dbFile := filepath.Join(dbPath, "packages")
+	db, err := jsonDbCache.NewDB(dbFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize database: %w", err)
+	}
+
+	p.dbm = db
+	p.pkgs = p.dbm.NewCollection("packages")
+
+	return p.pkgs, nil
+}
+
+// getOwnerPackages initializes and returns the database connection
+func (p *packagesTransitions) getOwnerPackages(userId string) (*internal.OwnerPackages, error) {
+	if p.pkgs == nil {
+		return nil, fmt.Errorf("package owner database not initialized")
+	}
+
+	db := p.pkgs
+
+	packages := internal.OwnerPackages{
+		Owner:   "",
+		Package: map[string]internal.PackageOwnerMeta{},
+	}
+
+	err := db.Get(userId, &packages)
+	if err != nil {
+		// return nil, fmt.Errorf("failed to get package owner: %w", err)
+		return &packages, fmt.Errorf("failed to get package owner: %w", err)
+	}
+
+	return &packages, nil
+}
+
+// normalizePackageData accepts either the nested internal.Package JSON shape
+// (with a "basic" object) or the flat payload the `kue` CLI sends
+// ({name, type, description, version, engine, publisher, keywords, modules})
+// and returns the nested shape expected by internal.Package.
+func normalizePackageData(data map[string]interface{}) map[string]interface{} {
+	if data == nil {
+		return map[string]interface{}{}
+	}
+	if _, ok := data["basic"].(map[string]interface{}); ok {
+		return data
+	}
+
+	str := func(key string) string {
+		if s, ok := data[key].(string); ok {
+			return strings.TrimSpace(s)
+		}
+		return ""
+	}
+
+	normalized := map[string]interface{}{
+		"basic": map[string]interface{}{
+			"name":        str("name"),
+			"version":     str("version"),
+			"description": str("description"),
+			"license":     str("license"),
+		},
+	}
+	if publisher := str("publisher"); publisher != "" {
+		normalized["authors"] = map[string]interface{}{"author": publisher}
+	}
+	if keywords, ok := data["keywords"]; ok {
+		normalized["categories"] = map[string]interface{}{"keywords": keywords}
+	}
+	if modules, ok := data["modules"]; ok {
+		normalized["modules"] = modules
+	}
+	if repository := str("repository"); repository != "" {
+		normalized["url"] = map[string]interface{}{"repository": repository}
+	}
+	return normalized
+}
+
+// AddPackage adds a new package to the registry
+func (p *packagesTransitions) AddPackage(
+	data map[string]interface{},
+	owner string,
+) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	// now := time.Now().Format(time.RFC3339)
+	pkg := internal.Package{
+		Basic: internal.PackageBasic{Owner: owner},
+		Status: internal.PackageStatus{
+			Status:      "active",
+			BuildStatus: "unknown",
+		},
+		Authors: internal.PackageAuthors{
+			Author:       owner,
+			Maintainers:  []string{},
+			Contributors: nil,
+		},
+		Categories: internal.PackageCategories{
+			Categories: []string{},
+			Keywords:   nil,
+			Tags:       nil,
+		},
+		Pricing: internal.PricingTier{
+			OneTimePrice:      0,
+			SubscriptionPrice: 0,
+			CloudPrice:        0,
+			EnterprisePrice:   0,
+			Currency:          "USD",
+		},
+	}
+	err = mapstructure.Decode(normalizePackageData(data), &pkg)
+	if err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to unmarshal package data: %w", err)
+		return
+	}
+	pkg.Basic.Owner = owner
+
+	if pkg.Basic.Name == "" || pkg.Basic.Version == "" {
+		r.Success = false
+		r.StatusCode = 400
+		r.Error = fmt.Errorf("package name and version are required")
+		return
+	}
+
+	now := time.Now().Format(time.RFC3339)
+	pkg.Date.CreatedAt = now
+	pkg.Date.UpdatedAt = now
+
+	// Versions are immutable: a published (name, version) pair can never be
+	// overwritten, only yanked. Report a conflict so clients (kue) can treat
+	// it as "already exists".
+	key := fmt.Sprintf("%s@%s", pkg.Basic.Name, pkg.Basic.Version)
+	var existing internal.Package
+	if err = db.Get(key, &existing); err == nil {
+		r.Success = false
+		r.StatusCode = 409
+		r.Error = fmt.Errorf("package %s already exists", key)
+		return
+	}
+
+	// Store a package with a composite key (name@version)
+	if err = db.Set(key, pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to add package: %w", err)
+		return
+	}
+
+	packages, err := p.getOwnerPackages(owner)
+	if err != nil {
+		packages = &internal.OwnerPackages{
+			Owner:   owner,
+			Package: map[string]internal.PackageOwnerMeta{},
+		}
+	}
+
+	meta := internal.PackageOwnerMeta{
+		Owner:      owner,
+		Type:       "",
+		Name:       "",
+		Path:       "",
+		Hash:       "",
+		Visibility: internal.PackageVisibility{},
+		Versions: []internal.PackageOwnerVersion{
+			{
+				Version:    pkg.Basic.Version,
+				Hash:       "",
+				Visibility: pkg.Visibility,
+			},
+		},
+	}
+	hash := packages.GetVersionFromString(fmt.Sprintf("%s@%s", pkg.Basic.Name, pkg.Basic.Version))
+	packages.Package[hash] = meta
+	versions := meta
+	versions.Hash = uuid.Base64Id(fmt.Sprintf("%s@%s", pkg.Basic.Name, pkg.Basic.Version))
+	versions.Versions = append(versions.Versions, internal.PackageOwnerVersion{
+		Version:    pkg.Basic.Version,
+		Hash:       versions.Hash,
+		Visibility: pkg.Visibility,
+	})
+	versions.Name = pkg.Basic.Name
+	versions.Type = pkg.URL.Repository
+	versions.Path = pkg.URL.Repository
+	versions.Owner = owner
+	versions.Visibility = pkg.Visibility
+	err = p.pkgs.Set(owner, versions)
+	if err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to set package versions: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"message": "Package added successfully",
+		"package": pkg,
+	}
+	return
+}
+
+// GetPackage retrieves a specific package by name and version
+func (p *packagesTransitions) GetPackage(name, version string) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", name, version)
+	var pkg internal.Package
+	if err := db.Get(key, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = pkg
+	return
+}
+
+// InstallPackage resolves a package for `kue install`: by exact version when
+// given, otherwise the latest version of the named package. The response is
+// the package record itself so clients can read its `modules` (Go module
+// paths) and dependencies. Visibility is enforced: anonymous requesters (and
+// non-owners) can only install public+published packages; invisible packages
+// report 404 rather than 403 to avoid leaking their existence.
+func (p *packagesTransitions) InstallPackage(name, version, userId string) (r domain.FlowStepResult) {
+	if strings.TrimSpace(name) == "" {
+		r.Success = false
+		r.StatusCode = 400
+		r.Error = fmt.Errorf("name is required")
+		return
+	}
+
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	if version != "" && version != "latest" {
+		var pkg internal.Package
+		if err := db.Get(fmt.Sprintf("%s@%s", name, version), &pkg); err != nil || !packageVisibleTo(&pkg, userId) {
+			r.Success = false
+			r.StatusCode = 404
+			r.Error = fmt.Errorf("package not found: %s@%s", name, version)
+			return
+		}
+		r.Success = true
+		r.StatusCode = 200
+		r.Response = pkg
+		return
+	}
+
+	var latest *internal.Package
+	for _, value := range db.GetAll() {
+		var pkg internal.Package
+		if err := json.Unmarshal(value, &pkg); err != nil {
+			continue
+		}
+		if pkg.Basic.Name != name || !packageVisibleTo(&pkg, userId) {
+			continue
+		}
+		if latest == nil || compareVersions(pkg.Basic.Version, latest.Basic.Version) > 0 {
+			cp := pkg
+			latest = &cp
+		}
+	}
+	if latest == nil {
+		r.Success = false
+		r.StatusCode = 404
+		r.Error = fmt.Errorf("package not found: %s", name)
+		return
+	}
+
+	r.Success = true
+	r.StatusCode = 200
+	r.Response = *latest
+	return
+}
+
+// GetPackageByModule resolves the registry package that provides the given
+// Go module path (as referenced by a workflow action's metadata.go_module).
+// Visibility rules match search: anonymous requesters resolve public+published
+// packages only; owners also their own. Returns the latest visible version.
+func (p *packagesTransitions) GetPackageByModule(module, userId string) (r domain.FlowStepResult) {
+	module = strings.TrimSpace(module)
+	if module == "" {
+		r.Success = false
+		r.StatusCode = 400
+		r.Error = fmt.Errorf("module is required")
+		return
+	}
+
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	var latest *internal.Package
+	for _, value := range db.GetAll() {
+		var pkg internal.Package
+		if err := json.Unmarshal(value, &pkg); err != nil {
+			continue
+		}
+		if pkg.Basic.Name == "" || !packageVisibleTo(&pkg, userId) {
+			continue
+		}
+		provides := false
+		for _, m := range pkg.Modules {
+			if m == module {
+				provides = true
+				break
+			}
+		}
+		if !provides {
+			continue
+		}
+		if latest == nil || compareVersions(pkg.Basic.Version, latest.Basic.Version) > 0 {
+			cp := pkg
+			latest = &cp
+		}
+	}
+	if latest == nil {
+		r.Success = false
+		r.StatusCode = 404
+		r.Error = fmt.Errorf("no package provides module %s", module)
+		return
+	}
+
+	r.Success = true
+	r.StatusCode = 200
+	r.Response = *latest
+	return
+}
+
+// compareVersions compares two dotted version strings numerically per
+// segment ("1.10.0" > "1.9.9"), falling back to string comparison for
+// non-numeric segments. Returns -1, 0, or 1.
+func compareVersions(a, b string) int {
+	as := strings.Split(strings.TrimPrefix(a, "v"), ".")
+	bs := strings.Split(strings.TrimPrefix(b, "v"), ".")
+	for i := 0; i < len(as) || i < len(bs); i++ {
+		var av, bv string
+		if i < len(as) {
+			av = as[i]
+		}
+		if i < len(bs) {
+			bv = bs[i]
+		}
+		ai, aerr := strconv.Atoi(av)
+		bi, berr := strconv.Atoi(bv)
+		if aerr == nil && berr == nil {
+			if ai != bi {
+				if ai < bi {
+					return -1
+				}
+				return 1
+			}
+			continue
+		}
+		if av != bv {
+			if av < bv {
+				return -1
+			}
+			return 1
+		}
+	}
+	return 0
+}
+
+// ListPackages lists the authenticated user's own packages (all versions,
+// regardless of visibility).
+func (p *packagesTransitions) ListPackages(Token jwt.Token) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	packages := []internal.Package{}
+	for _, value := range db.GetAll() {
+		var pkg internal.Package
+		if err := json.Unmarshal(value, &pkg); err != nil {
+			continue
+		}
+		// The collection also holds owner-meta rows that unmarshal to empty
+		// records — skip anything without a name.
+		if pkg.Basic.Name == "" || pkg.Basic.Owner != Token.UserID {
+			continue
+		}
+		packages = append(packages, pkg)
+	}
+
+	r.Success = true
+	r.Response = packages
+	return
+}
+
+// RemovePackage removes a package from the registry
+func (p *packagesTransitions) RemovePackage(name, version string) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", name, version)
+	if err := db.Delete(key); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to remove package: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"message": fmt.Sprintf("Package %s removed successfully", key),
+	}
+	return
+}
+
+// ResolveDependencies resolves the dependency tree for a package
+func (p *packagesTransitions) ResolveDependencies(name, version string) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	// Get the package
+	key := fmt.Sprintf("%s@%s", name, version)
+	var pkg internal.Package
+	if err := db.Get(key, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	// Resolve dependencies recursively
+	resolved := make(map[string]string)
+	visited := make(map[string]bool)
+
+	if err := p.resolveDepsRecursive(db, pkg.Dependencies.Packages, resolved, visited); err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"package":      fmt.Sprintf("%s@%s", name, version),
+		"dependencies": resolved,
+	}
+	return
+}
+
+// resolveDepsRecursive recursively resolves dependencies
+func (p *packagesTransitions) resolveDepsRecursive(db *jsonDbCache.Collection, depPackages string, resolved map[string]string, visited map[string]bool) error {
+	deps := strings.Split(depPackages, "\n")
+	for _, dep := range deps {
+		depParts := strings.Split(dep, "@")
+		if len(depParts) != 2 {
+			continue
+		}
+		depName := depParts[0]
+		depVersion := depParts[1]
+		key := fmt.Sprintf("%s@%s", depName, depVersion)
+
+		// Check for circular dependencies
+		if visited[key] {
+			continue
+		}
+		visited[key] = true
+
+		// Add to a resolved list
+		resolved[depName] = depVersion
+
+		// Get the dependency package
+		var depPkg internal.Package
+		if err := db.Get(key, &depPkg); err != nil {
+			// Dependency isn't found, but continue
+			continue
+		}
+
+		// Recursively resolve its dependencies
+		if len(depPkg.Dependencies.Packages) > 0 {
+			if err := p.resolveDepsRecursive(db, depPkg.Dependencies.Packages, resolved, visited); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// GetDependencies gets the list of direct dependencies for a package
+func (p *packagesTransitions) GetDependencies(name, version string) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", name, version)
+	var pkg internal.Package
+	if err := db.Get(key, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"package":      fmt.Sprintf("%s@%s", name, version),
+		"dependencies": pkg.Dependencies,
+	}
+	return
+}
+
+// UpdateLikes increments or decrements the likes count for a package
+func (p *packagesTransitions) UpdateLikes(name, version string, increment bool) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", name, version)
+	var pkg internal.Package
+	if err := db.Get(key, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	if increment {
+		pkg.Analytics.Likes++
+	} else if pkg.Analytics.Likes > 0 {
+		pkg.Analytics.Likes--
+	}
+	pkg.Date.UpdatedAt = time.Now().Format(time.RFC3339)
+
+	if err := db.Set(key, pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to update likes: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"package": key,
+		"likes":   pkg.Analytics.Likes,
+	}
+	return
+}
+
+// UpdateFollowers increments or decrements the followers count for a package
+func (p *packagesTransitions) UpdateFollowers(name, version string, increment bool) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", name, version)
+	var pkg internal.Package
+	if err := db.Get(key, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	if increment {
+		pkg.Analytics.Followers++
+	} else if pkg.Analytics.Followers > 0 {
+		pkg.Analytics.Followers--
+	}
+	pkg.Date.UpdatedAt = time.Now().Format(time.RFC3339)
+
+	if err := db.Set(key, pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to update followers: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"package":   key,
+		"followers": pkg.Analytics.Followers,
+	}
+	return
+}
+
+// IncrementDownloads increments the download count for a package
+func (p *packagesTransitions) IncrementDownloads(name, version string) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", name, version)
+	var pkg internal.Package
+	if err := db.Get(key, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	pkg.Analytics.Downloads++
+	pkg.Date.UpdatedAt = time.Now().Format(time.RFC3339)
+
+	if err := db.Set(key, pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to update downloads: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"package":   key,
+		"downloads": pkg.Analytics.Downloads,
+	}
+	return
+}
+
+// GetPackageStats retrieves statistics for a package
+func (p *packagesTransitions) GetPackageStats(name, version string) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", name, version)
+	var pkg internal.Package
+	if err := db.Get(key, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"package":           key,
+		"likes":             pkg.Analytics.Likes,
+		"followers":         pkg.Analytics.Followers,
+		"downloads":         pkg.Analytics.Downloads,
+		"stars":             pkg.Analytics.Stars,
+		"dependenciesCount": pkg.Dependencies.Count,
+		"dependentsCount":   pkg.Dependencies.DependentsCount,
+		"securityScore":     pkg.Quality.SecurityScore,
+		"qualityScore":      pkg.Quality.QualityScore,
+		"testCoverage":      pkg.Quality.TestCoverage,
+		"buildStatus":       pkg.Status.BuildStatus,
+		"status":            pkg.Status.Status,
+	}
+	return
+}
+
+// GetGlobalStats retrieves aggregated statistics across all packages
+func (p *packagesTransitions) GetGlobalStats() (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	// Get all packages
+	keys := db.GetAll()
+
+	var (
+		totalPackages   int
+		totalLikes      int
+		totalFollowers  int
+		totalDownloads  int
+		totalStars      int
+		publicPackages  int
+		privatePackages int
+		activePackages  int
+		mostLiked       []map[string]interface{}
+		mostDownloaded  []map[string]interface{}
+		mostFollowed    []map[string]interface{}
+		recentPackages  []map[string]interface{}
+	)
+
+	type PackageWithKey struct {
+		Key string
+		Pkg internal.Package
+	}
+
+	var allPackages []PackageWithKey
+
+	for key, value := range keys {
+		var pkg internal.Package
+		jsonBytes, err := json.Marshal(value)
+		if err != nil {
+			continue
+		}
+		if err := json.Unmarshal(jsonBytes, &pkg); err != nil {
+			continue
+		}
+
+		allPackages = append(allPackages, PackageWithKey{Key: key, Pkg: pkg})
+
+		totalPackages++
+		totalLikes += pkg.Analytics.Likes
+		totalFollowers += pkg.Analytics.Followers
+		totalDownloads += pkg.Analytics.Downloads
+		totalStars += pkg.Analytics.Stars
+
+		if pkg.Visibility.IsPrivate {
+			privatePackages++
+		} else {
+			publicPackages++
+		}
+
+		if pkg.Status.Status == "active" {
+			activePackages++
+		}
+	}
+
+	// Get top packages by different metrics
+	// Sort and get top 10 most liked
+	sortedByLikes := make([]PackageWithKey, len(allPackages))
+	copy(sortedByLikes, allPackages)
+	sort.Slice(sortedByLikes, func(i, j int) bool {
+		return sortedByLikes[i].Pkg.Analytics.Likes > sortedByLikes[j].Pkg.Analytics.Likes
+	})
+	for i := 0; i < len(sortedByLikes) && i < 10; i++ {
+		mostLiked = append(mostLiked, map[string]interface{}{
+			"package": sortedByLikes[i].Key,
+			"likes":   sortedByLikes[i].Pkg.Analytics.Likes,
+			"name":    sortedByLikes[i].Pkg.Basic.Name,
+		})
+	}
+
+	// Sort and get top 10 most downloaded
+	sortedByDownloads := make([]PackageWithKey, len(allPackages))
+	copy(sortedByDownloads, allPackages)
+	sort.Slice(sortedByDownloads, func(i, j int) bool {
+		return sortedByDownloads[i].Pkg.Analytics.Downloads > sortedByDownloads[j].Pkg.Analytics.Downloads
+	})
+	for i := 0; i < len(sortedByDownloads) && i < 10; i++ {
+		mostDownloaded = append(mostDownloaded, map[string]interface{}{
+			"package":   sortedByDownloads[i].Key,
+			"downloads": sortedByDownloads[i].Pkg.Analytics.Downloads,
+			"name":      sortedByDownloads[i].Pkg.Basic.Name,
+		})
+	}
+
+	// Sort and get top 10 most followed
+	sortedByFollowers := make([]PackageWithKey, len(allPackages))
+	copy(sortedByFollowers, allPackages)
+	sort.Slice(sortedByFollowers, func(i, j int) bool {
+		return sortedByFollowers[i].Pkg.Analytics.Followers > sortedByFollowers[j].Pkg.Analytics.Followers
+	})
+	for i := 0; i < len(sortedByFollowers) && i < 10; i++ {
+		mostFollowed = append(mostFollowed, map[string]interface{}{
+			"package":   sortedByFollowers[i].Key,
+			"followers": sortedByFollowers[i].Pkg.Analytics.Followers,
+			"name":      sortedByFollowers[i].Pkg.Basic.Name,
+		})
+	}
+
+	// Sort by creation date and get 10 most recent
+	sortedByDate := make([]PackageWithKey, len(allPackages))
+	copy(sortedByDate, allPackages)
+	sort.Slice(sortedByDate, func(i, j int) bool {
+		return sortedByDate[i].Pkg.Date.CreatedAt > sortedByDate[j].Pkg.Date.CreatedAt
+	})
+	for i := 0; i < len(sortedByDate) && i < 10; i++ {
+		recentPackages = append(recentPackages, map[string]interface{}{
+			"package":   sortedByDate[i].Key,
+			"name":      sortedByDate[i].Pkg.Basic.Name,
+			"createdAt": sortedByDate[i].Pkg.Date.CreatedAt,
+		})
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"totalPackages":   totalPackages,
+		"totalLikes":      totalLikes,
+		"totalFollowers":  totalFollowers,
+		"totalDownloads":  totalDownloads,
+		"totalStars":      totalStars,
+		"publicPackages":  publicPackages,
+		"privatePackages": privatePackages,
+		"activePackages":  activePackages,
+		"mostLiked":       mostLiked,
+		"mostDownloaded":  mostDownloaded,
+		"mostFollowed":    mostFollowed,
+		"recentPackages":  recentPackages,
+	}
+	return
+}
+
+// PublishPackage sets the IsPublished flag to true for a package
+func (p *packagesTransitions) PublishPackage(name, version string) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", name, version)
+	var pkg internal.Package
+	if err := db.Get(key, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	pkg.Visibility.IsPublished = true
+	pkg.Date.UpdatedAt = time.Now().Format(time.RFC3339)
+
+	if err := db.Set(key, pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to publish package: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"message":     fmt.Sprintf("Package %s published successfully", key),
+		"package":     key,
+		"isPublished": pkg.Visibility.IsPublished,
+	}
+	return
+}
+
+// UnpublishPackage sets the IsPublished flag to false for a package
+func (p *packagesTransitions) UnpublishPackage(name, version string) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", name, version)
+	var pkg internal.Package
+	if err := db.Get(key, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	pkg.Visibility.IsPublished = false
+	pkg.Date.UpdatedAt = time.Now().Format(time.RFC3339)
+
+	if err := db.Set(key, pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to unpublish package: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"message":     fmt.Sprintf("Package %s unpublished successfully", key),
+		"package":     key,
+		"isPublished": pkg.Visibility.IsPublished,
+	}
+	return
+}
+
+// UpdatePackagePricing updates the pricing information for a package
+func (p *packagesTransitions) UpdatePackagePricing(
+	name, version string,
+	oneTimePrice, subscriptionPrice, cloudPrice, enterprisePrice float64,
+	currency string,
+) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", name, version)
+	var pkg internal.Package
+	if err := db.Get(key, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	if currency == "" {
+		currency = "USD"
+	}
+
+	pkg.Pricing = internal.PricingTier{
+		OneTimePrice:      oneTimePrice,
+		SubscriptionPrice: subscriptionPrice,
+		CloudPrice:        cloudPrice,
+		EnterprisePrice:   enterprisePrice,
+		Currency:          currency,
+	}
+	pkg.Date.UpdatedAt = time.Now().Format(time.RFC3339)
+
+	if err := db.Set(key, pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to update pricing: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"message": fmt.Sprintf("Pricing updated successfully for %s", key),
+		"package": key,
+		"pricing": pkg.Pricing,
+	}
+	return
+}
+
+// UpdatePackageFromJSON updates an existing package from JSON data
+// Note: The owner field from packageData is ignored; the authenticated user becomes the owner
+func (p *packagesTransitions) UpdatePackageFromJSON(packageData map[string]interface{}, owner string) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	// Parse packageData into Package struct (accepts nested or flat payloads)
+	packageData = normalizePackageData(packageData)
+	jsonBytes, err := json.Marshal(packageData)
+	if err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to marshal package data: %w", err)
+		return
+	}
+
+	var pkg internal.Package = internal.Package{
+		Basic: internal.PackageBasic{
+			Owner: owner,
+		},
+		Authors: internal.PackageAuthors{
+			Maintainers: nil,
+		},
+		URL:          internal.PackageURL{},
+		Categories:   internal.PackageCategories{},
+		Dependencies: internal.PackageDependencies{},
+		Analytics:    internal.PackageAnalytics{},
+		Status: internal.PackageStatus{
+			Status:      "active",
+			BuildStatus: "unknown",
+		},
+		Visibility: internal.PackageVisibility{},
+		Quality:    internal.PackageQuality{},
+		Pricing:    internal.PricingTier{},
+		Date: internal.PackageDate{
+			CreatedAt: time.Now().Format(time.RFC3339),
+			UpdatedAt: time.Now().Format(time.RFC3339),
+		},
+		Modules: nil,
+	}
+	if err := json.Unmarshal(jsonBytes, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to unmarshal package data: %w", err)
+		return
+	}
+
+	// Validate required fields
+	if pkg.Basic.Name == "" {
+		r.Success = false
+		r.Error = fmt.Errorf("package name is required")
+		return
+	}
+	if pkg.Basic.Version == "" {
+		r.Success = false
+		r.Error = fmt.Errorf("package version is required")
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", pkg.Basic.Name, pkg.Basic.Version)
+	var existingPkg internal.Package
+	if err := db.Get(key, &existingPkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	// Preserve creation timestamp and set authenticated user as owner
+	pkg.Date.CreatedAt = existingPkg.Date.CreatedAt
+	pkg.Basic.Owner = owner // Always use authenticated user as owner
+
+	now := time.Now().Format(time.RFC3339)
+	pkg.Date.UpdatedAt = now
+
+	// Set defaults for optional fields if not provided
+	if pkg.Status.Status == "" {
+		pkg.Status.Status = existingPkg.Status.Status
+	}
+	if pkg.Status.BuildStatus == "" {
+		pkg.Status.BuildStatus = existingPkg.Status.BuildStatus
+	}
+	if pkg.Authors.Maintainers == nil {
+		pkg.Authors.Maintainers = existingPkg.Authors.Maintainers
+	}
+	if pkg.Categories.Categories == nil {
+		pkg.Categories.Categories = existingPkg.Categories.Categories
+	}
+	if pkg.Categories.Tags == nil {
+		pkg.Categories.Tags = existingPkg.Categories.Tags
+	}
+	if pkg.Categories.Keywords == nil {
+		pkg.Categories.Keywords = existingPkg.Categories.Keywords
+	}
+	if pkg.Dependencies.Packages == "" {
+		pkg.Dependencies.Packages = existingPkg.Dependencies.Packages
+	}
+	if pkg.Dependencies.Count == 0 {
+		pkg.Dependencies.Count = existingPkg.Dependencies.Count
+	}
+	if pkg.Dependencies.Count == 0 {
+		pkg.Dependencies.Count = existingPkg.Dependencies.Count
+	}
+	if pkg.Dependencies.DependentsCount == 0 {
+		pkg.Dependencies.DependentsCount = existingPkg.Dependencies.DependentsCount
+	}
+	// Set currency default: use existing if not provided, otherwise default to USD
+	if pkg.Pricing.Currency == "" {
+		if existingPkg.Pricing.Currency != "" {
+			pkg.Pricing.Currency = existingPkg.Pricing.Currency
+		} else {
+			pkg.Pricing.Currency = "USD"
+		}
+	}
+
+	// Preserve system-managed fields
+	pkg.Visibility.IsPublished = existingPkg.Visibility.IsPublished
+	pkg.Analytics.Likes = existingPkg.Analytics.Likes
+	pkg.Analytics.Followers = existingPkg.Analytics.Followers
+	pkg.Analytics.Downloads = existingPkg.Analytics.Downloads
+	pkg.Analytics.Stars = existingPkg.Analytics.Stars
+	pkg.Visibility.IsPublished = existingPkg.Visibility.IsPublished
+	pkg.Dependencies.DependentsCount = existingPkg.Dependencies.DependentsCount
+
+	// Update dependency count
+	pkg.Dependencies.Count = len(pkg.Dependencies.Packages)
+
+	if err := db.Set(key, pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to update package: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"message": "Package updated successfully",
+		"package": pkg,
+	}
+	return
+}
+
+// UpdatePackage updates an existing package (for editing)
+//
+//goland:noinspection GoUnusedParameter
+func (p *packagesTransitions) UpdatePackage(
+	name, version, description, author, owner, license, repository, homepage, documentation string,
+	maintainers, keywords, categories, tags []string,
+	dependencies string,
+	isPrivate bool,
+	status, buildStatus string,
+	securityScore, qualityScore int,
+	testCoverage float64,
+	oneTimePrice, subscriptionPrice, cloudPrice, enterprisePrice float64,
+	currency string,
+	modules []string,
+) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", name, version)
+	var existingPkg internal.Package
+	if err := db.Get(key, &existingPkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	// Preserve creation timestamp and original owner
+	createdAt := existingPkg.Date.CreatedAt
+	originalOwner := existingPkg.Basic.Owner
+	if owner == "" {
+		owner = originalOwner
+	}
+
+	now := time.Now().Format(time.RFC3339)
+
+	// Set defaults for optional fields
+	if status == "" {
+		status = existingPkg.Status.Status
+	}
+	if buildStatus == "" {
+		buildStatus = existingPkg.Status.BuildStatus
+	}
+	if maintainers == nil {
+		maintainers = existingPkg.Authors.Maintainers
+	}
+	if categories == nil {
+		categories = existingPkg.Categories.Categories
+	}
+	if tags == nil {
+		tags = existingPkg.Categories.Tags
+	}
+	if currency == "" {
+		currency = existingPkg.Pricing.Currency
+	}
+	if currency == "" {
+		currency = "USD"
+	}
+	if modules == nil {
+		modules = existingPkg.Modules
+	}
+
+	pkg := internal.Package{
+		Basic: internal.PackageBasic{
+			Name:        name,
+			Version:     version,
+			Description: description,
+			Owner:       owner,
+			License:     license,
+		},
+		Authors: internal.PackageAuthors{
+			Author:      author,
+			Maintainers: maintainers,
+		},
+		URL: internal.PackageURL{
+			Repository:    repository,
+			Homepage:      homepage,
+			Documentation: documentation,
+		},
+		Dependencies: internal.PackageDependencies{
+			Packages:        dependencies,
+			Count:           len(strings.Split(dependencies, "\n")),
+			DependentsCount: existingPkg.Dependencies.DependentsCount, // Preserve dependents count
+		},
+		Visibility: internal.PackageVisibility{
+			IsPrivate:   isPrivate,
+			IsPublished: existingPkg.Visibility.IsPublished, // Preserve publish status
+		},
+		Analytics: internal.PackageAnalytics{
+			// Preserve statistics
+			Likes:     existingPkg.Analytics.Likes,
+			Followers: existingPkg.Analytics.Followers,
+			Downloads: existingPkg.Analytics.Downloads,
+			Stars:     existingPkg.Analytics.Stars,
+		},
+		Date: internal.PackageDate{
+			// Package metadata
+			CreatedAt: createdAt,
+			UpdatedAt: now,
+			PublishAt: existingPkg.Date.PublishAt, // Preserve publish date
+		},
+		// Additional fields
+		Categories: internal.PackageCategories{
+			Keywords:   existingPkg.Categories.Keywords, // Preserve keywords
+			Categories: categories,
+			Tags:       existingPkg.Categories.Tags, // Preserve tags
+		},
+		Status: internal.PackageStatus{
+			Status:      status,
+			BuildStatus: buildStatus,
+		},
+		Quality: internal.PackageQuality{
+			SecurityScore: securityScore,
+			QualityScore:  qualityScore,
+			TestCoverage:  testCoverage,
+		},
+		// Pricing information
+		Pricing: internal.PricingTier{
+			OneTimePrice:      oneTimePrice,
+			SubscriptionPrice: subscriptionPrice,
+			CloudPrice:        cloudPrice,
+			EnterprisePrice:   enterprisePrice,
+			Currency:          currency,
+		},
+		Modules: modules, // Preserve modules field
+	}
+
+	if err := db.Set(key, pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to update package: %w", err)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"message": "Package updated successfully",
+		"package": pkg,
+	}
+	return
+}
+
+// SearchPackages searches for packages based on various criteria
+//
+//goland:noinspection GoUnusedParameter
+// packageVisibleTo reports whether a package may appear in search results
+// for the given requester. Public+published packages are visible to
+// everyone (including anonymous); everything else only to its owner.
+func packageVisibleTo(pkg *internal.Package, userId string) bool {
+	if pkg.Visibility.IsPublished && !pkg.Visibility.IsPrivate {
+		return true
+	}
+	return userId != "" && pkg.Basic.Owner == userId
+}
+
+func (p *packagesTransitions) SearchPackages(
+	query, filterPrivate, filterPublished, sortBy, sortOrder string,
+	page, pageSize int,
+	userId string,
+) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	// Get all keys
+	keys := db.GetAll()
+
+	packages := []internal.Package{}
+	queryStr := query
+
+	for _, value := range keys {
+		// Parse the value as Package
+		var pkg internal.Package
+		if err = json.Unmarshal(value, &pkg); err != nil {
+			continue
+		}
+
+		// Skip owner-meta rows stored in the same collection.
+		if pkg.Basic.Name == "" {
+			continue
+		}
+
+		// Visibility: enforced regardless of the requested filters — filters
+		// can only narrow within what the requester may see.
+		if !packageVisibleTo(&pkg, userId) {
+			continue
+		}
+		switch filterPrivate {
+		case "public":
+			if pkg.Visibility.IsPrivate {
+				continue
+			}
+		case "private":
+			if !pkg.Visibility.IsPrivate {
+				continue
+			}
+		}
+		switch filterPublished {
+		case "published", "true":
+			if !pkg.Visibility.IsPublished {
+				continue
+			}
+		case "unpublished", "false":
+			if pkg.Visibility.IsPublished {
+				continue
+			}
+		}
+
+		// Apply search query
+		if queryStr != "" {
+			matches := false
+
+			// Search in name
+			if pkg.Basic.Name != "" && containsIgnoreCase(pkg.Basic.Name, queryStr) {
+				matches = true
+			}
+
+			// Search in description
+			if !matches && pkg.Basic.Description != "" &&
+				containsIgnoreCase(pkg.Basic.Description, queryStr) {
+				matches = true
+			}
+
+			// Search in author
+			if !matches && pkg.Authors.Author != "" &&
+				containsIgnoreCase(pkg.Authors.Author, queryStr) {
+				matches = true
+			}
+
+			// Search in keywords
+			if !matches {
+				for _, keyword := range pkg.Categories.Keywords {
+					if containsIgnoreCase(keyword, queryStr) {
+						matches = true
+						break
+					}
+				}
+			}
+
+			// Search in categories
+			if !matches {
+				for _, category := range pkg.Categories.Categories {
+					if containsIgnoreCase(category, queryStr) {
+						matches = true
+						break
+					}
+				}
+			}
+
+			// Search in tags
+			if !matches {
+				for _, tag := range pkg.Categories.Tags {
+					if containsIgnoreCase(tag, queryStr) {
+						matches = true
+						break
+					}
+				}
+			}
+
+			if !matches {
+				continue
+			}
+		}
+
+		packages = append(packages, pkg)
+	}
+
+	// Sort packages
+	if sortBy != "" {
+		sortPackages(packages, sortBy, sortOrder)
+	}
+
+	// Apply pagination
+	totalResults := len(packages)
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+
+	startIdx := (page - 1) * pageSize
+	endIdx := startIdx + pageSize
+
+	if startIdx >= totalResults {
+		packages = []internal.Package{}
+	} else if endIdx > totalResults {
+		packages = packages[startIdx:]
+	} else {
+		packages = packages[startIdx:endIdx]
+	}
+
+	totalPages := (totalResults + pageSize - 1) / pageSize
+
+	// Each result keeps the full nested package (pkg.kuetix.com reads
+	// basic.*) plus flat name/version/description/publisher keys (the kue
+	// CLI reads those).
+	results := make([]map[string]interface{}, 0, len(packages))
+	for _, pkg := range packages {
+		entry := map[string]interface{}{}
+		if raw, err := json.Marshal(pkg); err == nil {
+			_ = json.Unmarshal(raw, &entry)
+		}
+		entry["name"] = pkg.Basic.Name
+		entry["version"] = pkg.Basic.Version
+		entry["description"] = pkg.Basic.Description
+		entry["publisher"] = pkg.Authors.Author
+		results = append(results, entry)
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"packages":    results,
+		"total":       totalResults,
+		"page":        page,
+		"pageSize":    pageSize,
+		"totalPages":  totalPages,
+		"hasNextPage": page < totalPages,
+		"hasPrevPage": page > 1,
+	}
+	return
+}
+
+// Helper function to check if a string contains another string (case-insensitive)
+func containsIgnoreCase(str, substr string) bool {
+	if substr == "" || substr == "*" {
+		return true
+	}
+
+	strLower := ""
+	substrLower := ""
+
+	// Convert to lowercase
+	strLower = strings.ToLower(str)
+	substrLower = strings.ToLower(substr)
+
+	// Check if substr is in str
+	if len(substrLower) > len(strLower) {
+		return false
+	}
+
+	for i := 0; i <= len(strLower)-len(substrLower); i++ {
+		if strLower[i:i+len(substrLower)] == substrLower {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Helper function to sort packages
+func sortPackages(packages []internal.Package, sortBy, sortOrder string) {
+	ascending := sortOrder != "desc"
+
+	switch sortBy {
+	case "name":
+		sort.Slice(packages, func(i, j int) bool {
+			if ascending {
+				return packages[i].Basic.Name < packages[j].Basic.Name
+			}
+			return packages[i].Basic.Name > packages[j].Basic.Name
+		})
+	case "downloads":
+		sort.Slice(packages, func(i, j int) bool {
+			if ascending {
+				return packages[i].Analytics.Downloads < packages[j].Analytics.Downloads
+			}
+			return packages[i].Analytics.Downloads > packages[j].Analytics.Downloads
+		})
+	case "likes":
+		sort.Slice(packages, func(i, j int) bool {
+			if ascending {
+				return packages[i].Analytics.Likes < packages[j].Analytics.Likes
+			}
+			return packages[i].Analytics.Likes > packages[j].Analytics.Likes
+		})
+	case "followers":
+		sort.Slice(packages, func(i, j int) bool {
+			if ascending {
+				return packages[i].Analytics.Followers < packages[j].Analytics.Followers
+			}
+			return packages[i].Analytics.Followers > packages[j].Analytics.Followers
+		})
+	case "createdAt":
+		sort.Slice(packages, func(i, j int) bool {
+			if ascending {
+				return packages[i].Date.CreatedAt < packages[j].Date.CreatedAt
+			}
+			return packages[i].Date.CreatedAt > packages[j].Date.CreatedAt
+		})
+	case "updatedAt":
+		sort.Slice(packages, func(i, j int) bool {
+			if ascending {
+				return packages[i].Date.UpdatedAt < packages[j].Date.UpdatedAt
+			}
+			return packages[i].Date.UpdatedAt > packages[j].Date.UpdatedAt
+		})
+	default:
+		// Default sort by createdAt descending (newest first)
+		sort.Slice(packages, func(i, j int) bool {
+			return packages[i].Date.CreatedAt > packages[j].Date.CreatedAt
+		})
+	}
+}
+
+// CheckPackageOwnership verifies if a user owns a package
+func (p *packagesTransitions) CheckPackageOwnership(repo, version, userID string) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", repo, version)
+	var pkg internal.Package
+	if err := db.Get(key, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	// Check if user is the owner; ownership violations must fail here because
+	// the WSL layer cannot branch on a boolean response at runtime.
+	isOwner := pkg.Basic.Owner == userID
+	if !isOwner {
+		r.Success = false
+		r.StatusCode = 403
+		r.Error = fmt.Errorf("user %s does not own package %s", userID, key)
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"isOwner": isOwner,
+		"owner":   pkg.Basic.Owner,
+		"userId":  userID,
+	}
+	return
+}
+
+// GetPackageWithAuth retrieves a package, respecting private/public access
+func (p *packagesTransitions) GetPackageWithAuth(name, version, userID string) (r domain.FlowStepResult) {
+	db, err := p.getItemsDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := fmt.Sprintf("%s@%s", name, version)
+	var pkg internal.Package
+	if err := db.Get(key, &pkg); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("package not found: %w", err)
+		return
+	}
+
+	// If package is private, check if user is the owner
+	if pkg.Visibility.IsPrivate && pkg.Basic.Owner != userID {
+		r.Success = false
+		r.Error = fmt.Errorf("access denied: package is private")
+		return
+	}
+
+	r.Success = true
+	r.Response = pkg
+	return
+}

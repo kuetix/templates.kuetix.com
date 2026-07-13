@@ -1,0 +1,29 @@
+workflow update_followers {
+  start: UpdateFollowers
+
+  state UpdateFollowers {
+    action packages/packages.UpdateFollowers(
+      name: $json.name,
+      version: $json.version,
+      increment: $json.increment
+    ) as FollowersResult
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $FollowersResult.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 404
+    ) as ErrorResponse
+    end fail
+  }
+}

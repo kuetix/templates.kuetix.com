@@ -1,0 +1,33 @@
+workflow update_pricing {
+  start: UpdatePricing
+
+  state UpdatePricing {
+    action packages/packages.UpdatePackagePricing(
+      name: $json.name,
+      version: $json.version,
+      oneTimePrice: $json.oneTimePrice,
+      subscriptionPrice: $json.subscriptionPrice,
+      cloudPrice: $json.cloudPrice,
+      enterprisePrice: $json.enterprisePrice,
+      currency: $json.currency,
+    ) as PricingResult
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $PricingResult.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 500
+    ) as ErrorResponse
+    end fail
+  }
+}

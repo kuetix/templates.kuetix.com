@@ -1,0 +1,60 @@
+module auth.login
+import services/common
+
+workflow user_login {
+  start: Request
+
+  state Request {
+    action parameters/Request(type: "login") as Req
+    on success -> Lookup(Req)
+  }
+
+  state Lookup(Req) {
+    action workflow/repositorium/user/get(id: "<<helpers.Id(Req.Email)>>") as User
+    on success -> CheckPassword(Req, User)
+    on error -> Fail
+  }
+
+  state CheckPassword(Req, User) {
+    action login/CheckPassword(request: Req, user: User)
+    on success -> EncryptedId(User)
+    on error -> Invalid
+  }
+
+  state EncryptedId(User) {
+    action login/EncryptedId(user: User) as Enc
+    on success -> GenerateToken(User, Enc)
+  }
+
+  state GenerateToken(User, Enc) {
+    action login/GenerateToken(user: User) as Token
+    on success -> Persist(User)
+    on error -> TokenGenerationFailed
+  }
+
+  state Persist(User) {
+    action workflow/repositorium/user/set(id: $User.ID, entity: "user")
+    on success -> Respond(User, Token)
+    on error -> Respond(User, Token)
+  }
+
+  state Respond(User, Token) {
+    action response/ResponseEntity(entityName: "user", loginResponse: Token)
+    end ok
+  }
+
+  state Invalid {
+    action response/ResponseError(message: "Invalid credentials", code: 401)
+    end fail
+  }
+
+  state TokenGenerationFailed {
+    action response/ResponseError(message: "Failed to generate access or refresh token", code: 500)
+    end fail
+  }
+
+  state Fail {
+    action response/ResponseError(message: "Lookup failed", code: 404)
+    end fail
+  }
+}

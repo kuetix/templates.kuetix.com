@@ -1,0 +1,97 @@
+const {
+    cors: {
+        "AllowedOrigins":   ["https://pkg.kuetix.com", "http://localhost:5173"],
+        "AllowedMethods":   ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        "AllowedHeaders":   ["Origin", "Content-Type", "Authorization", "sentry-trace", "baggage", "X-Requested-With", "Accept"],
+        "ExposedHeaders":   ["Content-Length"],
+        "AllowCredentials": true,
+        "MaxAge":           12,
+    },
+    routes: {
+        // Core endpoints
+        "/health": [{"method": "GET", "workflow": "api_server/endpoints/core/health", "description": "Health check endpoint","require":{"headers": ["Authorization"], "qs": ["ping"]}},],
+        "/swagger/generate": [{"method": "POST", "workflow": "api_server/endpoints/swagger/generate", "description": "Generate Swagger documentation from routes.wsl","require":{"headers": ["Authorization"], "json": []}}],
+        // "/swagger/swagger.json": [{"method": "GET", "workflow": "api_server/endpoints/swagger/json", "description": "Serve Swagger specification JSON file","require":{"headers": ["Authorization"], "json": []}}],
+        // "/swagger/swagger.yaml": [{"method": "GET", "workflow": "api_server/endpoints/swagger/yaml", "description": "Serve Swagger specification YAML file","require":{"headers": ["Authorization"], "json": []}}],
+//        "/workflow/execute": [{"method": "POST", "workflow": "api_server/endpoints/core/workflow_execute", "description": "Execute a workflow with provided parameters","require":{"headers": ["Authorization"], "json": []}}],
+
+        // Authentication endpoints
+        "/auth/register": [{"method": "POST", "workflow": "api_server/endpoints/auth/register", "description": "Register a new user account","require":{"headers": ["Authorization"], "json": ["email","password","username","fullName","bio","avatar","location","website","company","socialLinks"]}}],
+        "/auth/login": [{"method": "POST", "workflow": "api_server/endpoints/auth/login", "description": "Login with email and password","require":{"headers": ["Authorization"], "json": ["email","password","username"]}}],
+//        "/auth/request-reset-password": [{"method": "POST", "workflow": "api_server/endpoints/auth/request_password_reset", "description": "Request password reset","require":{"headers": ["Authorization"], "json": []}}],
+//        "/auth/reset-password": [{"method": "POST", "workflow": "api_server/endpoints/auth/reset_password", "description": "Reset user password","require":{"headers": ["Authorization"], "json": []}}],
+//        "/auth/generate-token": [{"method": "POST", "workflow": "api_server/endpoints/auth/generate_token", "description": "Generate JWT token","require":{"headers": ["Authorization"], "json": []}}],
+        "/auth/validate": [{"method": "POST", "workflow": "api_server/endpoints/auth/validate_jwt", "description": "Validate JWT token from the Authorization header","require":{"headers": ["Authorization"]}}],
+
+        // Transition management endpoints
+        "/transitions": [{"method": "GET", "workflow": "api_server/endpoints/discovery/list_transitions", "description": "List all available transitions","require":{"headers": ["Authorization"], "json": []}},],
+
+        // Workflow management endpoints
+        // "/workflows": [{"method": "GET", "workflow": "api_server/endpoints/discovery/list_workflows", "description": "List workflows by type"},],
+
+        // Marketplace discovery endpoints
+        // "/templates": [{"method": "GET", "workflow": "api_server/endpoints/discovery/list_templates", "description": "List project templates"},],
+
+        // Marketplace project endpoints
+        "/project/create": [{"method": "POST", "workflow": "api_server/endpoints/projects/create_project", "description": "Create a new project from template","require":{"headers": ["Authorization"], "json": ["templateName","projectName","outputPath","variables"]}},],
+        // "/project/tree":[{"method": "GET", "workflow": "api_server/endpoints/projects/get_project_tree", "description": "Get project file tree"},],
+
+        // "/file/read": [{"method": "GET", "workflow": "api_server/endpoints/files/read", "description": "Read file content"},],
+        // "/file/write": [{"method": "POST", "workflow": "api_server/endpoints/files/write", "description": "Write file content"},],
+
+        // Package management endpoints
+        "/package": [
+            {"method": "GET", "workflow": "api_server/endpoints/packages/list_packages", "description": "List all packages","require":{"headers": ["Authorization"], "json": []}},
+            {"method": "POST", "workflow": "api_server/endpoints/packages/add_package", "description": "Add a new package (requires JWT)","require":{"headers": ["Authorization"], "json": ["data"]}},
+            {"method": "PUT", "workflow": "api_server/endpoints/packages/update_package", "description": "Update an existing package (requires JWT)","require":{"headers": ["Authorization"], "json": ["data"]}},
+        ],
+        "/package/get": [{"method": "GET", "workflow": "api_server/endpoints/packages/get_package", "description": "Get a specific package","require":{"headers": ["Authorization"], "json": ["name","version"]}},],
+        "/package/remove": [{"method": "DELETE", "workflow": "api_server/endpoints/packages/remove_package", "description": "Remove a package","require":{"headers": ["Authorization"], "json": ["name","version"]}},],
+        "/package/dependencies": [{"method": "GET", "workflow": "api_server/endpoints/packages/get_dependencies", "description": "Get package dependencies","require":{"headers": ["Authorization"], "json": ["name","version"]}},],
+        "/package/resolve": [{"method": "GET", "workflow": "api_server/endpoints/packages/resolve_dependencies", "description": "Resolve dependency tree","require":{"headers": ["Authorization"], "json": ["name","version"]}},],
+        "/package/stats": [{"method": "GET", "workflow": "api_server/endpoints/packages/get_package_stats", "description": "Get package statistics","require":{"headers": ["Authorization"], "json": ["name","version"]}},],
+        "/package/stats/global": [{"method": "GET", "workflow": "api_server/endpoints/packages/get_global_stats", "description": "Get global marketplace statistics","require":{"headers": ["Authorization"], "json": []}},],
+        "/package/likes": [{"method": "POST", "workflow": "api_server/endpoints/packages/update_likes", "description": "Update package likes","require":{"headers": ["Authorization"], "json": ["name","version","increment"]}},],
+        "/package/followers": [{"method": "POST", "workflow": "api_server/endpoints/packages/update_followers", "description": "Update package followers","require":{"headers": ["Authorization"], "json": ["name","version","increment"]}},],
+        "/package/downloads": [{"method": "POST", "workflow": "api_server/endpoints/packages/increment_downloads", "description": "Increment download count","require":{"headers": ["Authorization"], "json": ["name","version"]}},],
+
+        // New package management endpoints
+        "/package/search": [{"method": "GET", "workflow": "api_server/endpoints/packages/search_packages", "description": "Search packages (auth optional; anonymous sees public+published only)","require":{"headers": ["Authorization"], "qs": ["q","query","filterPrivate","filterPublished","sortBy","sortOrder","page","pageSize"]}},],
+        // kue CLI registry endpoints
+        "/packages/search": [{"method": "GET", "workflow": "api_server/endpoints/packages/search_packages", "description": "Search packages (kue CLI; auth optional)","require":{"headers": ["Authorization"], "qs": ["q","query","filterPrivate","filterPublished","sortBy","sortOrder","page","pageSize"]}},],
+        "/packages/install": [{"method": "GET", "workflow": "api_server/endpoints/packages/install_package", "description": "Resolve a package for installation (kue CLI)","require":{"headers": ["Authorization"], "qs": ["name","version"]}},],
+        "/package/publish": [{"method": "POST", "workflow": "api_server/endpoints/packages/publish_package", "description": "Publish a package","require":{"headers": ["Authorization"], "json": ["name","version"]}},],
+        "/package/unpublish": [{"method": "POST", "workflow": "api_server/endpoints/packages/unpublish_package", "description": "Unpublish a package","require":{"headers": ["Authorization"], "json": ["name","version"]}},],
+        "/package/pricing": [{"method": "PUT", "workflow": "api_server/endpoints/packages/update_pricing", "description": "Update package pricing","require":{"headers": ["Authorization"], "json": ["name","version","oneTimePrice","subscriptionPrice","cloudPrice","enterprisePrice","currency"]}},],
+
+        // Public registry browse endpoints (auth optional; anonymous sees public+published only)
+        "/workflows/search": [{"method": "GET", "workflow": "api_server/endpoints/registry/search_workflows", "description": "Search public workflows by name or action reference","require":{"headers": ["Authorization"], "qs": ["q","query","limit"]}},],
+        "/workflows/get": [{"method": "GET", "workflow": "api_server/endpoints/registry/get_workflow_public", "description": "Fetch a public workflow by name (owner disambiguates)","require":{"headers": ["Authorization"], "qs": ["name","owner"]}},],
+        "/package/by-module": [{"method": "GET", "workflow": "api_server/endpoints/packages/get_package_by_module", "description": "Resolve the package providing a Go module","require":{"headers": ["Authorization"], "qs": ["module"]}},],
+
+        // Workflow registry endpoints
+        "/workflow": [
+            {"method": "GET", "workflow": "api_server/endpoints/workflows/list_workflows", "description": "List workflows owned by the JWT user","require":{"headers": ["Authorization"], "qs": ["limit","cursor"]}},
+            {"method": "POST", "workflow": "api_server/endpoints/workflows/create_or_update_workflow", "description": "Create Or Update a new workflow","require":{"headers": ["Authorization"], "json": ["name","project","content","actions","dependencies","imports","file_path"]}},
+            {"method": "PUT", "workflow": "api_server/endpoints/workflows/update_workflow", "description": "Replace an existing workflow","require":{"headers": ["Authorization"], "json": ["name","content","actions","dependencies","imports","file_path"]}},
+        ],
+        "/workflow/{name}": [
+            {"method": "GET", "workflow": "api_server/endpoints/workflows/get_workflow", "description": "Fetch a single workflow by name","require":{"headers": ["Authorization"], "url": ["name"]}},
+            {"method": "PUT", "workflow": "api_server/endpoints/workflows/update_workflow", "description": "Replace an existing workflow by name","require":{"headers": ["Authorization"], "url": ["name"], "json": ["name","content","actions","dependencies","imports","file_path"]}},
+            {"method": "DELETE", "workflow": "api_server/endpoints/workflows/delete_workflow", "description": "Delete a workflow by name","require":{"headers": ["Authorization"], "url": ["name"]}},
+        ],
+        "/workflow/get": [{"method": "GET", "workflow": "api_server/endpoints/workflows/get_workflow", "description": "Fetch a single workflow by name","require":{"headers": ["Authorization"], "qs": ["name"]}}],
+        "/workflow/delete": [{"method": "DELETE", "workflow": "api_server/endpoints/workflows/delete_workflow", "description": "Delete a workflow by name","require":{"headers": ["Authorization"], "qs": ["name"]}}],
+
+        // Profile management endpoints
+        "/profile": [
+            {"method": "GET", "workflow": "api_server/endpoints/profiles/get_profile", "description": "Get the authenticated user's profile (kue CLI)","require":{"headers": ["Authorization"]}},
+            {"method": "POST", "workflow": "api_server/endpoints/profiles/create_profile", "description": "Create a new profile (requires JWT)","require":{"headers": ["Authorization"], "json": ["username","email","fullName","bio","avatar","location","website","company","socialLinks"]}},
+        ],
+        "/profile/list": [{"method": "GET", "workflow": "api_server/endpoints/profiles/list_profiles", "description": "List all profiles","require":{"headers": ["Authorization"]}},],
+        "/profile/get": [{"method": "GET", "workflow": "api_server/endpoints/profiles/get_profile", "description": "Get a specific profile (requires JWT)","require":{"headers": ["Authorization"], "json": []}},],
+        "/profile/update": [{"method": "PUT", "workflow": "api_server/endpoints/profiles/update_profile", "description": "Update profile (requires JWT)","require":{"headers": ["Authorization"], "json": []}},],
+        "/profile/delete": [{"method": "DELETE", "workflow": "api_server/endpoints/profiles/delete_profile", "description": "Delete profile (requires JWT)","require":{"headers": ["Authorization"], "json": []}},],
+    }
+}
+

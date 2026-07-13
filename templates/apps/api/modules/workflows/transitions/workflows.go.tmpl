@@ -1,0 +1,936 @@
+package transitions
+
+import (
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+	"time"
+
+	jsonDbCache "github.com/anare/filejsondb"
+	"{{.ProjectName}}/internal"
+	"github.com/kuetix/engine/engine/domain"
+	"github.com/kuetix/engine/engine/domain/interfaces"
+	"github.com/kuetix/engine/engine/workflow"
+	"github.com/kuetix/uuid"
+)
+
+const (
+	maxPayloadBytes      = 5 * 1024 * 1024
+	defaultListPageSize  = 50
+	maxListPageSize      = 200
+	servicesModulePrefix = "services/"
+	delimiter            = "::"
+)
+
+// publicCollection is the collection name of the materialized public index:
+// every public+published workflow is mirrored into
+// <db>/workflows/public/<workflow_id>.json so public search never has to
+// scan the per-user collections. userIds are hashes, so "public" can never
+// collide with a user collection.
+const publicCollection = "public"
+
+type workflowsTransitions struct {
+	workflow.BaseServiceTransition
+	dbm   *jsonDbCache.DB
+	items *jsonDbCache.Collection
+	pub   *jsonDbCache.Collection
+}
+
+func NewWorkflowsTransitions() interfaces.ServiceTransitions {
+	return &workflowsTransitions{}
+}
+
+func (w *workflowsTransitions) getDBM() (*jsonDbCache.DB, error) {
+	if w.dbm != nil {
+		return w.dbm, nil
+	}
+
+	options := w.Ctx.Engine.GetApplication().Env.Options
+	dbPath, _ := options.Context["dbPath"].(string)
+	if dbPath == "" {
+		dbPath = "./runtime/data"
+	}
+
+	if err := os.MkdirAll(dbPath, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create database directory: %w", err)
+	}
+
+	dbFile := filepath.Join(dbPath, "workflows")
+	db, err := jsonDbCache.NewDB(dbFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize database: %w", err)
+	}
+
+	w.dbm = db
+	return w.dbm, nil
+}
+
+func (w *workflowsTransitions) getDB(userId string) (*jsonDbCache.Collection, error) {
+	if w.items != nil {
+		return w.items, nil
+	}
+	dbm, err := w.getDBM()
+	if err != nil {
+		return nil, err
+	}
+	w.items = dbm.NewCollection(userId)
+	return w.items, nil
+}
+
+func (w *workflowsTransitions) getPublicDB() (*jsonDbCache.Collection, error) {
+	if w.pub != nil {
+		return w.pub, nil
+	}
+	dbm, err := w.getDBM()
+	if err != nil {
+		return nil, err
+	}
+	w.pub = dbm.NewCollection(publicCollection)
+	return w.pub, nil
+}
+
+// syncPublicRecord keeps the public index in step with a record's current
+// visibility: public+published records are mirrored under their workflow_id,
+// anything else is removed. Failures are non-fatal — the index is rebuilt at
+// startup by SyncPublicIndex.
+func (w *workflowsTransitions) syncPublicRecord(key string, rec *internal.WorkflowRecord) {
+	pub, err := w.getPublicDB()
+	if err != nil {
+		return
+	}
+	if rec != nil && rec.Public && rec.Published {
+		_ = pub.Set(key, *rec)
+		return
+	}
+	if pub.Exists(key) {
+		_ = pub.Delete(key)
+	}
+}
+
+// recordKey produces the composite (user_id, name) storage key.
+func recordKey(userID, name string) string {
+	id := userID + delimiter + name
+	return uuid.Id(id)
+}
+
+// decodePayload turns the action/json input into a typed WorkflowPayload and
+// enforces the 5 MB size cap from the spec.
+func decodePayload(raw map[string]interface{}) (*internal.WorkflowPayload, error) {
+	jsonBytes, err := json.Marshal(raw)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal payload: %w", err)
+	}
+	if len(jsonBytes) > maxPayloadBytes {
+		return nil, fmt.Errorf("payload too large: %d bytes (max %d)", len(jsonBytes), maxPayloadBytes)
+	}
+	var payload internal.WorkflowPayload
+	if err := json.Unmarshal(jsonBytes, &payload); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal payload: %w", err)
+	}
+	return &payload, nil
+}
+
+// validatePayload enforces the rules in the Shared context block. The returned
+// error message is the public reason; field is the offending JSON field, or "".
+func validatePayload(p *internal.WorkflowPayload) (field string, err error) {
+	if strings.TrimSpace(p.Name) == "" {
+		return "name", fmt.Errorf("name is required")
+	}
+	if strings.TrimSpace(p.Content) == "" {
+		return "content", fmt.Errorf("content is required")
+	}
+
+	depKey := func(ns, cls string) string { return ns + "/" + cls }
+	deps := make(map[string]struct{}, len(p.Dependencies))
+	for _, d := range p.Dependencies {
+		deps[depKey(d.Namespace, d.Class)] = struct{}{}
+	}
+
+	for _, a := range p.Actions {
+		if a.Module == "" {
+			continue
+		}
+		if strings.HasPrefix(a.Module, servicesModulePrefix) {
+			continue
+		}
+		// parts := strings.SplitN(a.Module, "/", 2)
+		// if len(parts) != 2 {
+		// 	return fmt.Sprintf("actions[%d].module", i), fmt.Errorf("module %q is not <namespace>/<class>", a.Module)
+		// }
+		// dKey := depKey(parts[0], parts[1])
+		// if _, ok := deps[dKey]; !ok {
+		// 	return fmt.Sprintf("actions[%d].module", i), fmt.Errorf("module %q has no matching entry in dependencies", a.Module)
+		// }
+	}
+	return "", nil
+}
+
+func validationFail(field string, err error) (r domain.FlowStepResult) {
+	r.Success = false
+	r.StatusCode = 400
+	r.Error = err
+	r.Response = map[string]interface{}{
+		"error": err.Error(),
+		"field": field,
+	}
+	return
+}
+
+// CreateWorkflow inserts a new workflow keyed by (userId, name).
+// Returns a 409-shaped response if a workflow with the same name already exists.
+func (w *workflowsTransitions) CreateWorkflow(payload map[string]interface{}, userId string, username string) (r domain.FlowStepResult) {
+	if userId == "" {
+		r.Success = false
+		r.Error = fmt.Errorf("userId is required")
+		return
+	}
+	db, err := w.getDB(userId)
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	wp, err := decodePayload(payload)
+	if err != nil {
+		return validationFail("", err)
+	}
+	if field, verr := validatePayload(wp); verr != nil {
+		return validationFail(field, verr)
+	}
+
+	key := recordKey(userId, wp.Name)
+	if db.Exists(key) {
+		r.Success = false
+		r.StatusCode = 409
+		r.Error = fmt.Errorf("workflow already exists")
+		r.Response = map[string]interface{}{
+			"error":      "workflow already exists",
+			"name":       wp.Name,
+			"StatusCode": 409,
+		}
+		return
+	}
+
+	now := time.Now().UTC().Format(time.RFC3339)
+	visibility := "private"
+	if wp.Public {
+		visibility = "public"
+	}
+	rec := internal.WorkflowRecord{
+		Uri:          fmt.Sprintf("%s/%s/%s", username, wp.Project, wp.Name),
+		UserID:       userId,
+		Name:         wp.Name,
+		Project:      wp.Project,
+		FilePath:     wp.FilePath,
+		Content:      wp.Content,
+		Imports:      wp.Imports,
+		Actions:      wp.Actions,
+		Dependencies: wp.Dependencies,
+		Visibility:   visibility,
+		Public:       wp.Public,
+		Published:    wp.Published,
+		Version:      1,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}
+
+	if err = db.Set(key, rec, "uri", "userId", "project", "filePath"); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to create workflow: %w", err)
+		return
+	}
+	w.syncPublicRecord(key, &rec)
+
+	r.Success = true
+	r.StatusCode = 201
+	r.Response = map[string]interface{}{
+		"name":       rec.Name,
+		"version":    rec.Version,
+		"created_at": rec.CreatedAt,
+	}
+	return
+}
+
+// CreateOrUpdateWorkflow inserts a new workflow keyed by (userId, name) or updates an existing one.
+func (w *workflowsTransitions) CreateOrUpdateWorkflow(payload map[string]interface{}, userId string, username string) (r domain.FlowStepResult) {
+	if userId == "" {
+		r.Success = false
+		r.Error = fmt.Errorf("userId is required")
+		return
+	}
+	db, err := w.getDB(userId)
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	wp, err := decodePayload(payload)
+	if err != nil {
+		return validationFail("", err)
+	}
+	if field, verr := validatePayload(wp); verr != nil {
+		return validationFail(field, verr)
+	}
+
+	key := recordKey(userId, wp.Name)
+
+	defer func() {
+		if y := recover(); y != nil {
+			r.Success = false
+			r.Error = fmt.Errorf("failed to create or update workflow: %w", y)
+			return
+		}
+	}()
+
+	if db.Exists(key) {
+		return w.UpdateWorkflow(wp.Name, payload, userId, username)
+	}
+
+	return w.CreateWorkflow(payload, userId, username)
+}
+
+// UpdateWorkflow replaces an existing workflow's content. Bumps version on
+// every call. Returns 404-shaped response if the row does not exist.
+func (w *workflowsTransitions) UpdateWorkflow(name string, payload map[string]interface{}, userId string, username string) (r domain.FlowStepResult) {
+	if userId == "" {
+		r.Success = false
+		r.Error = fmt.Errorf("userId is required")
+		return
+	}
+	db, err := w.getDB(userId)
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	wp, err := decodePayload(payload)
+	if err != nil {
+		return validationFail("", err)
+	}
+	if name != "" && wp.Name != "" && name != wp.Name {
+		return validationFail("name", fmt.Errorf("path name %q does not match payload name %q", name, wp.Name))
+	}
+	if name == "" {
+		name = wp.Name
+	} else if wp.Name == "" {
+		wp.Name = name
+	}
+	if field, verr := validatePayload(wp); verr != nil {
+		return validationFail(field, verr)
+	}
+
+	key := recordKey(userId, wp.Name)
+	var existing internal.WorkflowRecord
+	if err := db.Get(key, &existing); err != nil {
+		r.Success = false
+		r.StatusCode = 404
+		r.Error = fmt.Errorf("workflow not found")
+		r.Response = map[string]interface{}{
+			"error": "workflow not found",
+			"name":  wp.Name,
+		}
+		return
+	}
+
+	now := time.Now().UTC().Format(time.RFC3339)
+	existing.Uri = fmt.Sprintf("%s/%s/%s", username, wp.Project, wp.Name)
+	existing.Project = wp.Project
+	existing.FilePath = wp.FilePath
+	existing.Content = wp.Content
+	existing.Imports = wp.Imports
+	existing.Actions = wp.Actions
+	existing.Dependencies = wp.Dependencies
+	// Visibility flags change only when explicitly present in the payload —
+	// clients that omit them (e.g. kue update without --public/--publish)
+	// must not silently unpublish an already-public workflow.
+	if _, ok := payload["public"]; ok {
+		existing.Public = wp.Public
+		existing.Visibility = "private"
+		if wp.Public {
+			existing.Visibility = "public"
+		}
+	}
+	if _, ok := payload["published"]; ok {
+		existing.Published = wp.Published
+	}
+	existing.Version++
+	existing.UpdatedAt = now
+
+	if err = db.Set(key, existing, "uri", "userId", "project", "filePath"); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to update workflow: %w", err)
+		return
+	}
+	w.syncPublicRecord(key, &existing)
+
+	r.Success = true
+	r.StatusCode = 200
+	r.Response = map[string]interface{}{
+		"name":       existing.Name,
+		"version":    existing.Version,
+		"updated_at": existing.UpdatedAt,
+	}
+	return
+}
+
+// GetWorkflow returns the full stored payload plus version/timestamps.
+func (w *workflowsTransitions) GetWorkflow(name, userId string) (r domain.FlowStepResult) {
+	if userId == "" {
+		r.Success = false
+		r.Error = fmt.Errorf("userId is required")
+		return
+	}
+	if strings.TrimSpace(name) == "" {
+		return validationFail("name", fmt.Errorf("name is required"))
+	}
+	db, err := w.getDB(userId)
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	var rec internal.WorkflowRecord
+	if err := db.Get(recordKey(userId, name), &rec); err != nil {
+		r.Success = false
+		r.StatusCode = 404
+		r.Error = fmt.Errorf("workflow not found")
+		r.Response = map[string]interface{}{
+			"error": "workflow not found",
+			"name":  name,
+		}
+		return
+	}
+
+	resp := map[string]interface{}{
+		"name":         rec.Name,
+		"content":      rec.Content,
+		"imports":      rec.Imports,
+		"actions":      rec.Actions,
+		"dependencies": rec.Dependencies,
+		"version":      rec.Version,
+		"created_at":   rec.CreatedAt,
+		"updated_at":   rec.UpdatedAt,
+		"etag":         fmt.Sprintf("W/\"%s:%d\"", rec.Name, rec.Version),
+	}
+	if rec.FilePath != "" {
+		resp["file_path"] = rec.FilePath
+	}
+
+	r.Success = true
+	r.StatusCode = 200
+	r.Response = resp
+	return
+}
+
+// ListWorkflows returns summary entries for every workflow owned by userId,
+// sorted by updated_at DESC, with optional cursor pagination.
+func (w *workflowsTransitions) ListWorkflows(userId string, limit int, cursor string) (r domain.FlowStepResult) {
+	if userId == "" {
+		r.Success = false
+		r.Error = fmt.Errorf("userId is required")
+		return
+	}
+	db, err := w.getDB(userId)
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	if limit <= 0 {
+		limit = defaultListPageSize
+	}
+	if limit > maxListPageSize {
+		limit = maxListPageSize
+	}
+
+	//prefix := userId + delimiter
+	rows := db.GetAll()
+
+	records := make([]internal.WorkflowRecord, 0, len(rows))
+	for _, value := range rows {
+		var rec internal.WorkflowRecord
+		if err := json.Unmarshal(value, &rec); err != nil {
+			continue
+		}
+		// The collection also holds index/meta rows that unmarshal to empty
+		// records — skip anything without a name.
+		if rec.Name == "" {
+			continue
+		}
+		records = append(records, rec)
+	}
+
+	sort.Slice(records, func(i, j int) bool {
+		if records[i].UpdatedAt == records[j].UpdatedAt {
+			return records[i].Name < records[j].Name
+		}
+		return records[i].UpdatedAt > records[j].UpdatedAt
+	})
+
+	if cursor != "" {
+		decoded, err := base64.StdEncoding.DecodeString(cursor)
+		if err == nil {
+			parts := strings.SplitN(string(decoded), "|", 2)
+			if len(parts) == 2 {
+				cUpdatedAt, cName := parts[0], parts[1]
+				idx := -1
+				for i, rec := range records {
+					if rec.UpdatedAt == cUpdatedAt && rec.Name == cName {
+						idx = i
+						break
+					}
+					if rec.UpdatedAt < cUpdatedAt {
+						idx = i - 1
+						break
+					}
+				}
+				if idx >= 0 && idx+1 < len(records) {
+					records = records[idx+1:]
+				} else if idx >= 0 {
+					records = records[:0]
+				}
+			}
+		}
+	}
+
+	var nextCursor string
+	if len(records) > limit {
+		last := records[limit-1]
+		nextCursor = base64.StdEncoding.EncodeToString([]byte(last.UpdatedAt + "|" + last.Name))
+		records = records[:limit]
+	}
+
+	summaries := make([]internal.WorkflowSummary, 0, len(records))
+	for _, rec := range records {
+		summaries = append(summaries, internal.WorkflowSummary{
+			Name:              rec.Name,
+			Version:           rec.Version,
+			UpdatedAt:         rec.UpdatedAt,
+			ActionsCount:      len(rec.Actions),
+			DependenciesCount: len(rec.Dependencies),
+		})
+	}
+
+	resp := map[string]interface{}{
+		"workflows": summaries,
+		"count":     len(summaries),
+	}
+	if nextCursor != "" {
+		resp["cursor"] = nextCursor
+	}
+
+	r.Success = true
+	r.StatusCode = 200
+	r.Response = resp
+	return
+}
+
+// DeleteWorkflow hard-deletes a workflow. Returns 404 shape if not present.
+func (w *workflowsTransitions) DeleteWorkflow(name, userId string) (r domain.FlowStepResult) {
+	if userId == "" {
+		r.Success = false
+		r.Error = fmt.Errorf("userId is required")
+		return
+	}
+	if strings.TrimSpace(name) == "" {
+		return validationFail("name", fmt.Errorf("name is required"))
+	}
+	db, err := w.getDB(userId)
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	key := recordKey(userId, name)
+	if !db.Exists(key) {
+		r.Success = false
+		r.StatusCode = 404
+		r.Error = fmt.Errorf("workflow not found")
+		r.Response = map[string]interface{}{
+			"error": "workflow not found",
+			"name":  name,
+		}
+		return
+	}
+	if err := db.Delete(key); err != nil {
+		r.Success = false
+		r.Error = fmt.Errorf("failed to delete workflow: %w", err)
+		return
+	}
+	// Remove any mirrored copy from the public index.
+	w.syncPublicRecord(key, nil)
+
+	r.Success = true
+	r.StatusCode = 200
+	r.Response = map[string]interface{}{
+		"name":    name,
+		"deleted": true,
+	}
+	return
+}
+
+// CheckWorkflowOwnership verifies a workflow exists and is owned by userId.
+// Returned response.isOwner is true only when both conditions hold.
+func (w *workflowsTransitions) CheckWorkflowOwnership(name, userId string) (r domain.FlowStepResult) {
+	if userId == "" {
+		r.Success = false
+		r.Error = fmt.Errorf("userId is required")
+		return
+	}
+	db, err := w.getDB(userId)
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+
+	var rec internal.WorkflowRecord
+	if err := db.Get(recordKey(userId, name), &rec); err != nil {
+		r.Success = false
+		r.StatusCode = 404
+		r.Error = fmt.Errorf("workflow not found")
+		return
+	}
+
+	r.Success = true
+	r.Response = map[string]interface{}{
+		"isOwner": rec.UserID == userId,
+		"owner":   rec.UserID,
+		"userId":  userId,
+		"name":    rec.Name,
+	}
+	return
+}
+
+// ---------------------------------------------------------------------------
+// Public registry browse (cross-user, visibility-gated)
+// ---------------------------------------------------------------------------
+
+// workflowVisibleTo reports whether a workflow may be shown to the given
+// requester: public+published records are visible to everyone (including
+// anonymous), everything else only to its owner.
+func workflowVisibleTo(rec *internal.WorkflowRecord, userId string) bool {
+	if rec.Public && rec.Published {
+		return true
+	}
+	return userId != "" && rec.UserID == userId
+}
+
+// scanAllWorkflows walks every user collection under <dbPath>/workflows and
+// yields each stored record. Collections are directories named by userId;
+// index files (*.idx.json) are skipped.
+func (w *workflowsTransitions) scanAllWorkflows(visit func(rec *internal.WorkflowRecord)) error {
+	options := w.Ctx.Engine.GetApplication().Env.Options
+	dbPath, _ := options.Context["dbPath"].(string)
+	if dbPath == "" {
+		dbPath = "./runtime/data"
+	}
+	root := filepath.Join(dbPath, "workflows")
+
+	users, err := os.ReadDir(root)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("failed to read workflows root: %w", err)
+	}
+	for _, user := range users {
+		// Skip the materialized public index — it mirrors records that
+		// already live in the per-user collections.
+		if !user.IsDir() || user.Name() == publicCollection {
+			continue
+		}
+		dir := filepath.Join(root, user.Name())
+		files, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
+		for _, f := range files {
+			name := f.Name()
+			if f.IsDir() || !strings.HasSuffix(name, ".json") || strings.HasSuffix(name, ".idx.json") {
+				continue
+			}
+			data, err := os.ReadFile(filepath.Join(dir, name))
+			if err != nil {
+				continue
+			}
+			var rec internal.WorkflowRecord
+			if err := json.Unmarshal(data, &rec); err != nil || rec.Name == "" {
+				continue
+			}
+			visit(&rec)
+		}
+	}
+	return nil
+}
+
+// actionRef renders an action as its canonical reference, e.g.
+// "auth/jwt.GenerateToken".
+func actionRef(a *internal.WorkflowActionInfo) string {
+	if a.Module != "" {
+		return a.Module + "." + a.Name
+	}
+	return a.Name
+}
+
+// workflowMatches checks a search query against a workflow's name, its action
+// references, and its dependencies. It returns the matching action refs (if
+// any) so clients can highlight why a workflow matched.
+func workflowMatches(rec *internal.WorkflowRecord, query string) (bool, []string) {
+	if query == "" {
+		return true, nil
+	}
+	q := strings.ToLower(query)
+	matched := strings.Contains(strings.ToLower(rec.Name), q) ||
+		strings.Contains(strings.ToLower(rec.Project), q)
+
+	seen := map[string]bool{}
+	var matchedActions []string
+	for i := range rec.Actions {
+		ref := actionRef(&rec.Actions[i])
+		if strings.Contains(strings.ToLower(ref), q) && !seen[ref] {
+			seen[ref] = true
+			matchedActions = append(matchedActions, ref)
+		}
+	}
+	if !matched {
+		for _, dep := range rec.Dependencies {
+			if strings.Contains(strings.ToLower(dep.Namespace+"/"+dep.Class), q) ||
+				strings.Contains(strings.ToLower(dep.GoModule), q) {
+				matched = true
+				break
+			}
+		}
+	}
+	return matched || len(matchedActions) > 0, matchedActions
+}
+
+// SearchWorkflows searches visible workflows by name, action reference
+// (e.g. "auth/jwt.GenerateToken"), or dependency. Public workflows are read
+// from the materialized public index (<db>/workflows/public/), so anonymous
+// search never scans per-user collections; authenticated requesters get their
+// own collection merged in on top.
+func (w *workflowsTransitions) SearchWorkflows(query, userId string, limit int) (r domain.FlowStepResult) {
+	if limit <= 0 {
+		limit = defaultListPageSize
+	}
+	if limit > maxListPageSize {
+		limit = maxListPageSize
+	}
+
+	type hit struct {
+		rec            internal.WorkflowRecord
+		matchedActions []string
+	}
+	var hits []hit
+	seen := map[string]bool{}
+	q := strings.TrimSpace(query)
+	consider := func(rec *internal.WorkflowRecord) {
+		key := recordKey(rec.UserID, rec.Name)
+		if seen[key] || !workflowVisibleTo(rec, userId) {
+			return
+		}
+		ok, matchedActions := workflowMatches(rec, q)
+		if !ok {
+			return
+		}
+		seen[key] = true
+		hits = append(hits, hit{rec: *rec, matchedActions: matchedActions})
+	}
+	considerAll := func(rows map[string][]byte) {
+		for _, value := range rows {
+			var rec internal.WorkflowRecord
+			if err := json.Unmarshal(value, &rec); err != nil || rec.Name == "" {
+				continue
+			}
+			consider(&rec)
+		}
+	}
+
+	pub, err := w.getPublicDB()
+	if err != nil {
+		r.Success = false
+		r.Error = err
+		return
+	}
+	considerAll(pub.GetAll())
+
+	if userId != "" {
+		if own, err := w.getDB(userId); err == nil {
+			considerAll(own.GetAll())
+		}
+	}
+
+	sort.Slice(hits, func(i, j int) bool {
+		if hits[i].rec.UpdatedAt == hits[j].rec.UpdatedAt {
+			return hits[i].rec.Name < hits[j].rec.Name
+		}
+		return hits[i].rec.UpdatedAt > hits[j].rec.UpdatedAt
+	})
+	total := len(hits)
+	if len(hits) > limit {
+		hits = hits[:limit]
+	}
+
+	results := make([]map[string]interface{}, 0, len(hits))
+	for _, h := range hits {
+		entry := map[string]interface{}{
+			"name":               h.rec.Name,
+			"owner":              h.rec.UserID,
+			"project":            h.rec.Project,
+			"version":            h.rec.Version,
+			"updated_at":         h.rec.UpdatedAt,
+			"actions_count":      len(h.rec.Actions),
+			"dependencies_count": len(h.rec.Dependencies),
+			"public":             h.rec.Public,
+			"published":          h.rec.Published,
+		}
+		if len(h.matchedActions) > 0 {
+			entry["matched_actions"] = h.matchedActions
+		}
+		results = append(results, entry)
+	}
+
+	r.Success = true
+	r.StatusCode = 200
+	r.Response = map[string]interface{}{
+		"workflows": results,
+		"count":     len(results),
+		"total":     total,
+	}
+	return
+}
+
+// GetWorkflowPublic fetches one visible workflow by name for registry
+// browsing. `owner` (a userId) disambiguates when several users share a
+// name; without it the requester's own record wins, then any public one.
+// Public records are looked up in the materialized public index.
+func (w *workflowsTransitions) GetWorkflowPublic(name, owner, userId string) (r domain.FlowStepResult) {
+	if strings.TrimSpace(name) == "" {
+		return validationFail("name", fmt.Errorf("name is required"))
+	}
+
+	var found *internal.WorkflowRecord
+
+	// The requester's own record wins (covers their private/unpublished ones).
+	if userId != "" && (owner == "" || owner == userId) {
+		if own, err := w.getDB(userId); err == nil {
+			var rec internal.WorkflowRecord
+			if err := own.Get(recordKey(userId, name), &rec); err == nil && rec.Name != "" {
+				found = &rec
+			}
+		}
+	}
+
+	if found == nil {
+		pub, err := w.getPublicDB()
+		if err != nil {
+			r.Success = false
+			r.Error = err
+			return
+		}
+		if owner != "" {
+			var rec internal.WorkflowRecord
+			if err := pub.Get(recordKey(owner, name), &rec); err == nil && rec.Name != "" {
+				found = &rec
+			}
+		} else {
+			for _, value := range pub.GetAll() {
+				var rec internal.WorkflowRecord
+				if err := json.Unmarshal(value, &rec); err != nil || rec.Name != name {
+					continue
+				}
+				found = &rec
+				break
+			}
+		}
+	}
+
+	if found != nil && !workflowVisibleTo(found, userId) {
+		found = nil
+	}
+	if found == nil {
+		r.Success = false
+		r.StatusCode = 404
+		r.Error = fmt.Errorf("workflow not found")
+		r.Response = map[string]interface{}{"error": "workflow not found", "name": name}
+		return
+	}
+
+	r.Success = true
+	r.StatusCode = 200
+	r.Response = map[string]interface{}{
+		"name":         found.Name,
+		"owner":        found.UserID,
+		"project":      found.Project,
+		"content":      found.Content,
+		"imports":      found.Imports,
+		"actions":      found.Actions,
+		"dependencies": found.Dependencies,
+		"public":       found.Public,
+		"published":    found.Published,
+		"version":      found.Version,
+		"created_at":   found.CreatedAt,
+		"updated_at":   found.UpdatedAt,
+	}
+	return
+}
+
+// SyncPublicIndex rebuilds the materialized public index from the per-user
+// collections: every public+published workflow is mirrored into
+// <db>/workflows/public/<workflow_id>.json and stale entries are removed.
+// Runs at server startup so records written by older builds (or edited on
+// disk) are picked up. Never fails the boot — problems are reported in the
+// response instead.
+func (w *workflowsTransitions) SyncPublicIndex() (r domain.FlowStepResult) {
+	r.Success = true
+	r.StatusCode = 200
+
+	pub, err := w.getPublicDB()
+	if err != nil {
+		r.Response = map[string]interface{}{"error": err.Error()}
+		return
+	}
+
+	valid := map[string]bool{}
+	mirrored := 0
+	err = w.scanAllWorkflows(func(rec *internal.WorkflowRecord) {
+		if !rec.Public || !rec.Published {
+			return
+		}
+		key := recordKey(rec.UserID, rec.Name)
+		valid[key] = true
+		if err := pub.Set(key, *rec); err == nil {
+			mirrored++
+		}
+	})
+	if err != nil {
+		r.Response = map[string]interface{}{"error": err.Error(), "mirrored": mirrored}
+		return
+	}
+
+	removed := 0
+	for key := range pub.GetAll() {
+		if !valid[key] {
+			if err := pub.Delete(key); err == nil {
+				removed++
+			}
+		}
+	}
+
+	r.Response = map[string]interface{}{
+		"mirrored": mirrored,
+		"removed":  removed,
+	}
+	return
+}

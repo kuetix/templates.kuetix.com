@@ -1,0 +1,53 @@
+workflow user_login_example {
+  start: AuthenticateUser
+
+  state AuthenticateUser {
+    action auth/user.Login(
+      email: "demo@example.com",
+      password: "demoPassword123",
+      dbPath: "./runtime/data"
+    ) as LoginResult
+    on success -> GenerateToken
+    on error -> AuthenticationFailed
+  }
+
+  state GenerateToken {
+    action auth/jwt.GenerateToken(
+      userID: $LoginResult.response.userId,
+      username: $LoginResult.response.email,
+      email: $LoginResult.response.email,
+      expiresInHours: 720
+    ) as TokenResult
+    on success -> DisplaySuccess
+    on error -> Failed
+  }
+
+  state DisplaySuccess {
+    action services/common/debug.Log(
+      message: "User logged in successfully!",
+      data: {
+        userId: $LoginResult.response.userId,
+        email: $LoginResult.response.email,
+        token: $TokenResult.response.token,
+        expiresAt: $TokenResult.response.expiresAt
+      }
+    ) as LogResult
+    end ok
+  }
+
+  state AuthenticationFailed {
+    action services/common/debug.Log(
+      message: "Authentication failed",
+      error: $error.message
+    ) as ErrorLog
+    end fail
+  }
+
+  state Failed {
+    action services/common/debug.Log(
+      message: "Token generation failed",
+      error: $error.message
+    ) as ErrorLog
+    end fail
+  }
+}

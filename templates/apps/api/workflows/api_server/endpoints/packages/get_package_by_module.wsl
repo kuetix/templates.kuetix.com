@@ -1,0 +1,43 @@
+workflow get_package_by_module {
+  start: GetToken
+
+  // Auth is optional: anonymous requests resolve public+published packages.
+  state GetToken {
+    action auth/jwt.GetToken(authHeader: $headers.Authorization) as Token
+    on success -> GetPackage
+    on error -> CleanupErrors
+  }
+
+  state CleanupErrors {
+    action services/common/errors.CleanupErrors()
+    on success -> GetPackage
+    on error -> Failed
+  }
+
+  state GetPackage {
+    // SWAGGER INPUTS: module
+    action packages/packages.GetPackageByModule(
+      module: $qs.module??"",
+      userId: $Token.userId??""
+    ) as PackageResult
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    // SWAGGER SUCCESS OUTPUT: basic, modules, dependencies
+    action services/common/response.Response(
+      value: $PackageResult,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 0
+    ) as ErrorResponse
+    end fail
+  }
+}

@@ -1,0 +1,32 @@
+module feature_test
+
+import services/common
+
+// A simple workflow
+workflow basic_workflow {
+  start: Execute
+
+  state Execute {
+    action services/common/response.Response(value: "Basic workflow executed", statusCode: 200) as result
+    on success -> End
+  }
+
+  state End {
+    end ok
+  }
+}
+
+// Feature that orchestrates workflows
+feature feature_test {
+  start: RunWorkflow
+
+  state RunWorkflow {
+    action workflow basic_workflow
+    on success -> Complete
+  }
+
+  state Complete {
+    action services/common/response.Response(value: "Feature completed", statusCode: 200) as final_result
+    end ok
+  }
+}

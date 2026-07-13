@@ -4,4 +4,25 @@ go {{.MinGoVersion}}
 
 require (
 	github.com/kuetix/engine {{.KuetixEngineVersion}}
+{{- if eq .AppType "cli"}}
+	github.com/anare/filejsondb v1.0.0
+	github.com/kuetix/container v0.1.0
+	github.com/kuetix/helpers v1.0.0
+	github.com/kuetix/logger v1.0.0
+	github.com/kuetix/std-cli v1.0.0
+	github.com/schollz/progressbar/v3 v3.19.0
+	golang.org/x/term v0.43.0
+	golang.org/x/text v0.37.0
+{{- end}}
+{{- if eq .AppType "api"}}
+	github.com/anare/filejsondb v1.0.0
+	github.com/anare/simple-json-db-cache v0.0.0-20260404221628-68d155712870
+	github.com/go-viper/mapstructure/v2 v2.4.0
+	github.com/kuetix/container v0.1.0
+	github.com/kuetix/std-auth v1.0.0
+	github.com/kuetix/std-http v1.0.0
+	github.com/kuetix/uuid v0.1.0
+	golang.org/x/crypto v0.45.0
+	gopkg.in/yaml.v3 v3.0.1
+{{- end}}
 )

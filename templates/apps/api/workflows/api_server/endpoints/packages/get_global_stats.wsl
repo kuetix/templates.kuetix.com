@@ -1,0 +1,25 @@
+workflow get_global_stats {
+  start: GetGlobalStats
+
+  state GetGlobalStats {
+    action packages/packages.GetGlobalStats() as GlobalStats
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $GlobalStats.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 500
+    ) as ErrorResponse
+    end fail
+  }
+}

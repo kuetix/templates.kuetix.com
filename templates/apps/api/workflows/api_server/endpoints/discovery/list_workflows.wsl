@@ -1,0 +1,28 @@
+workflow list_workflows {
+  start: ListWorkflows
+
+  state ListWorkflows {
+    action discovery/discovery.ListWorkflows(
+      workflowsPath: $args.workflowsPath,
+      workflowType: $args.workflowType
+    ) as Workflows
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $Workflows.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 500
+    ) as ErrorResponse
+    end fail
+  }
+}

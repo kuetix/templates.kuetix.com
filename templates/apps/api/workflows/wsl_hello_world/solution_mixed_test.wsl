@@ -1,0 +1,52 @@
+module solution_mixed_test
+
+import services/common
+
+// A simple workflow
+workflow simple_workflow {
+  start: Execute
+
+  state Execute {
+    action services/common/response.Response(value: "Workflow executed", statusCode: 200) as result
+    on success -> End
+  }
+
+  state End {
+    end ok
+  }
+}
+
+// A feature that runs a workflow
+feature simple_feature {
+  start: RunWorkflow
+
+  state RunWorkflow {
+    action workflow simple_workflow
+    on success -> End
+  }
+
+  state End {
+    action services/common/response.Response(value: "Feature completed", statusCode: 200) as result
+    end ok
+  }
+}
+
+// Solution that runs both feature and workflow
+solution solution_mixed_test {
+  start: RunFeature
+
+  state RunFeature {
+    action feature simple_feature
+    on success -> RunWorkflow
+  }
+
+  state RunWorkflow {
+    action workflow simple_workflow
+    on success -> Complete
+  }
+
+  state Complete {
+    action services/common/response.Response(value: "Solution completed", statusCode: 200) as final_result
+    end ok
+  }
+}

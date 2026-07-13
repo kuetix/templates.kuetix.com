@@ -1,0 +1,39 @@
+workflow docker_build {
+  start: ValidateRequest
+
+  state ValidateRequest {
+    action services/common/assert.Assert(
+      condition: $json.projectPath != "" && $json.imageName != "",
+      message: "Project path and image name are required"
+    ) as Validation
+    on success -> BuildImage
+    on error -> Failed
+  }
+
+  state BuildImage {
+    action docker/docker.BuildImage(
+      projectPath: $json.projectPath,
+      imageName: $json.imageName,
+      imageTag: $json.imageTag,
+      buildArgs: $json.buildArgs
+    ) as Build
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $Build.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 500
+    ) as ErrorResponse
+    end fail
+  }
+}

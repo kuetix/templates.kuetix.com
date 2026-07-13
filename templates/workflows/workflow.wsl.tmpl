@@ -1,0 +1,24 @@
+module {{.WorkflowName}}
+
+import services/common
+
+const {
+    event: "{{.WorkflowName}}",
+    description: "{{.WorkflowNamePascal}} workflow",
+    version: "0.1.0",
+    enabled: true
+}
+
+workflow {{.WorkflowName}} {
+  start: InitialState
+
+  state InitialState {
+    action services/common/response.ResponseValue(value: "InitialState", statusCode: 200) as InitialResult
+    on success -> FinalState
+  }
+
+  state FinalState {
+    action services/common/response.ResponseValue(value: "FinalState", statusCode: 200) as FinalResult
+    end ok
+  }
+}

@@ -1,0 +1,28 @@
+workflow get_package {
+  start: GetPackage
+
+  state GetPackage {
+    action packages/packages.GetPackage(
+      name: $json.name,
+      version: $json.version
+    ) as PackageResult
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $PackageResult.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 404
+    ) as ErrorResponse
+    end fail
+  }
+}

@@ -1,0 +1,53 @@
+workflow user_registration_example {
+  start: RegisterNewUser
+
+  state RegisterNewUser {
+    action user/user.Register(
+      email: "demo@example.com",
+      password: "demoPassword123",
+      dbPath: "./runtime/data"
+    ) as RegistrationResult
+    on success -> GenerateToken
+    on error -> RegistrationFailed
+  }
+
+  state GenerateToken {
+    action auth/jwt.GenerateToken(
+      userID: $RegistrationResult.response.userId,
+      username: $RegistrationResult.response.email,
+      email: $RegistrationResult.response.email,
+      expiresInHours: 720
+    ) as TokenResult
+    on success -> DisplaySuccess
+    on error -> Failed
+  }
+
+  state DisplaySuccess {
+    action services/common/debug.Log(
+      message: "User registered successfully!",
+      data: {
+        userId: $RegistrationResult.response.userId,
+        email: $RegistrationResult.response.email,
+        token: $TokenResult.response.token,
+        expiresAt: $TokenResult.response.expiresAt
+      }
+    ) as LogResult
+    end ok
+  }
+
+  state RegistrationFailed {
+    action services/common/debug.Log(
+      message: "Registration failed",
+      error: $error.message
+    ) as ErrorLog
+    end fail
+  }
+
+  state Failed {
+    action services/common/debug.Log(
+      message: "Token generation failed",
+      error: $error.message
+    ) as ErrorLog
+    end fail
+  }
+}

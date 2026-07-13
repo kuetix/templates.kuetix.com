@@ -1,0 +1,40 @@
+workflow docker_run {
+  start: ValidateRequest
+
+  state ValidateRequest {
+    action services/common/assert.Assert(
+      condition: $json.imageName != "" && $json.workflowName != "",
+      message: "Image name and workflow name are required"
+    ) as Validation
+    on success -> RunContainer
+    on error -> Failed
+  }
+
+  state RunContainer {
+    action docker/docker.RunWorkflow(
+      imageName: $json.imageName,
+      imageTag: $json.imageTag,
+      workflowName: $json.workflowName,
+      workflowArgs: $json.workflowArgs,
+      env: $json.env
+    ) as Run
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $Run.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 500
+    ) as ErrorResponse
+    end fail
+  }
+}

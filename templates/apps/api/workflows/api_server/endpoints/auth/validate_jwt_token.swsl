@@ -1,0 +1,9 @@
+import services/common
+import auth/jwt
+
+// Define error handler first
+def services/common/response.Response(value: {error: "Wrong token", statusCode: 401) as ErrorResponse -> .
+
+// Main action flow with error binding
+auth/jwt.ExtractTokenFromHeader(authHeader: $json.authorization) as TokenResult <- ErrorResponse ->
+auth/jwt.ValidateToken(tokenString: $TokenResult.response.token) as Token <- ErrorResponse -> .

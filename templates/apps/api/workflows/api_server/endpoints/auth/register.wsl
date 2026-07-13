@@ -1,0 +1,89 @@
+workflow register {
+  start: ValidateInput
+
+  state ValidateInput {
+    action services/common/assert.NotEmpty(
+      value: "<<json.email ?? ''>>",
+      negative: "Email is required"
+    ) as EmailCheck
+    on success -> ValidatePassword
+    on error -> ValidationEmailFailed
+  }
+
+  state ValidationEmailFailed {
+    action services/common/response.ResponseError(message: $@.response, code: 400) as ErrorResponse
+    end fail
+  }
+
+  state ValidatePassword {
+    action services/common/assert.NotEmpty(
+      value: $json.password,
+      negative: "Password is required"
+    ) as PasswordCheck
+    on success -> _
+    on error -> ValidationFailed
+  }
+
+  state RegisterUser {
+    // SWAGGER INPUTS: email, password
+    // Register hashes the password and rejects duplicates itself. Hashing
+    // cannot be a separate WSL step: bcrypt hashes start with "$" and the
+    // engine re-parses "$"-prefixed strings as variable references.
+    action user/user.Register(
+      email: $json.email,
+      password: $json.password
+    ) as UserInfo
+    on success -> GenerateToken
+    on error -> RegistrationFailed
+  }
+
+  state GenerateToken {
+    action auth/jwt.GenerateToken(
+      userID: $UserInfo.response.userId,
+      username: $UserInfo.response.email,
+      email: $UserInfo.response.email,
+      expiresInHours: 720
+    ) as TokenResult
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    // SWAGGER SUCCESS OUTPUT: token, expiresAt, userId, email, message
+    action services/common/response.Response(
+      value: {
+        token: $TokenResult.response.token,
+        expiresAt: $TokenResult.response.expiresAt,
+        userId: $UserInfo.response.userId,
+        email: $UserInfo.response.email,
+        message: "Registration successful"
+      },
+      statusCode: 201
+    ) as Response
+    end ok
+  }
+
+  state ValidationFailed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 400
+    ) as ErrorResponse
+    end fail
+  }
+
+  state RegistrationFailed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 409
+    ) as ErrorResponse
+    end fail
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 500
+    ) as ErrorResponse
+    end fail
+  }
+}

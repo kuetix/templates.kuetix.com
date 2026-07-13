@@ -1,0 +1,39 @@
+workflow create_project {
+  start: ValidateRequest
+
+  state ValidateRequest {
+    action services/common/assert.Assert(
+      condition: $json.templateName != "" && $json.projectName != "",
+      message: "Template name and project name are required"
+    ) as Validation
+    on success -> CreateProject
+    on error -> Failed
+  }
+
+  state CreateProject {
+    action templates/templates.CreateProject(
+      templateName: $json.templateName,
+      projectName: $json.projectName,
+      outputPath: $json.outputPath,
+      variables: $json.variables
+    ) as Project
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $Project.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 500
+    ) as ErrorResponse
+    end fail
+  }
+}

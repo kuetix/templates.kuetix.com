@@ -1,0 +1,19 @@
+workflow list_transitions {
+  start: ListTransitions
+
+  state ListTransitions {
+    action discovery/discovery.ListTransitions(modulesJsonPath: "modules.json") as Transitions
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse(Transitions) {
+    action services/common/response.Response(value: $Transitions, statusCode: 200) as Response
+    end ok
+  }
+
+  state Failed() {
+    action services/common/response.Response(value: {error: $error.message}, statusCode: 500) as ErrorResponse
+    end fail
+  }
+}

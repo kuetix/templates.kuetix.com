@@ -1,0 +1,63 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"time"
+
+	"github.com/kuetix/engine"
+	"github.com/kuetix/engine/engine/domain"
+
+	"{{.ProjectName}}/modules"
+)
+
+var Version string
+var BuildTime string
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Printf("Usage: %s <workflow_name>\n", os.Args[0])
+		os.Exit(1)
+	}
+
+	if Version == "" {
+		Version = "dev"
+	}
+	if BuildTime == "" {
+		BuildTime = time.Now().Format(time.RFC3339)
+	}
+
+	workflow := os.Args[1]
+
+	modules.Enable()
+
+	options := &domain.Options{
+		EngineName:    "{{.ProjectName}}-pkg",
+		ConfigName:    "engine",
+		Verbose:       false,
+		Quiet:         false,
+		Amount:        1,
+		Retry:         1,
+		RetryDelay:    0,
+		RestartPolicy: "",
+		Workflow:      workflow,
+		Version:       Version,
+		BuildTime:     BuildTime,
+		LogPath:       "stdout",
+		Config:        &domain.Config{},
+		Args:          os.Args[2:],
+		Context:       map[string]interface{}{},
+	}
+
+	response := engine.RunWorkflow("production", options)
+
+	for _, res := range response {
+		if res.Response != nil {
+			fmt.Printf("%v\n", res.Response)
+		}
+		if res.Error != nil {
+			fmt.Printf("Error: %s\n", res.Error)
+			os.Exit(1)
+		}
+	}
+}

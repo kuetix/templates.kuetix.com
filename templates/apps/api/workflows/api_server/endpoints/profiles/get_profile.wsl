@@ -1,0 +1,45 @@
+workflow get_profile {
+  start: GetToken
+
+  state GetToken {
+    action auth/jwt.GetToken(authHeader: $headers.Authorization) as Token
+    on success -> _
+    on error -> Failed
+  }
+
+  state GetProfile {
+    action profiles/profiles.GetProfile(
+      userId: $Token.userId,
+    ) as ProfileResult
+    on success -> FormatResponse
+    on error -> CanTFindProfile
+  }
+
+  state CanTFindProfile {
+    action user/user.GetUserById(id: $Token.userId) as ProfileResult
+    on success -> CleanupErrors
+    on error -> Failed
+  }
+
+  state CleanupErrors {
+    action services/common/errors.CleanupErrors()
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $ProfileResult.response??ProfileResult,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 404
+    ) as ErrorResponse
+    end fail
+  }
+}

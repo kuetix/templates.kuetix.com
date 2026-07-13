@@ -1,0 +1,66 @@
+module api_server_startup
+
+extends consts
+import api/http
+import swagger
+
+workflow startup {
+  start: PrintVersion
+
+  state PrintVersion {
+    action converse/speak.Say(on: "version", v: [$version, $buildTime]) as CORSResult
+    on success -> SyncPublicIndex
+    on fail -> Failed
+  }
+
+  state SyncPublicIndex {
+    // Rebuild the materialized public workflow index (data/workflows/public/)
+    // so records written before this feature (or by older builds) are picked
+    // up. The transition never fails the boot.
+    action workflows/workflows.SyncPublicIndex() as SyncResult
+    on success -> SetupCORS
+    on fail -> Failed
+  }
+
+  state SetupCORS {
+    action api/http/http.SetupCORS(options: $cors) as CORSResult
+    on success -> RegisterRoutes
+    on fail -> Failed
+  }
+
+  state RegisterRoutes {
+    action api/http/http.RegisterRoutes(
+      modulesPath: $modulesPath,
+      workflowsPath: $workflowsPath,
+      version: $version,
+      buildTime: $buildTime,
+      groups: $routes
+    ) as RouteResult
+    on success -> StartServer
+    on failure -> Failed
+  }
+
+  state StartServer {
+    action api/http/http.StartServer(
+      port: $args.port
+    ) as ServerResult
+    on success -> Running
+    on failure -> Failed
+  }
+
+  state Running {
+    action services/common/response.Response(
+      value: "API Server running successfully",
+      statusCode: 200
+    ) as FinalResult
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: "Failed to start API server",
+      statusCode: 500
+    ) as ErrorResult
+    end fail
+  }
+}

@@ -1,0 +1,36 @@
+workflow get_project_tree {
+  start: ValidateRequest
+
+  state ValidateRequest {
+    action services/common/assert.Assert(
+      condition: $json.projectPath != "",
+      message: "Project path is required"
+    ) as Validation
+    on success -> GetTree
+    on error -> Failed
+  }
+
+  state GetTree {
+    action templates/templates.GetProjectTree(
+      projectPath: $json.projectPath
+    ) as Tree
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $Tree.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 500
+    ) as ErrorResponse
+    end fail
+  }
+}

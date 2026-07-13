@@ -1,0 +1,24 @@
+module {{.FeatureName}}
+
+import services/common
+
+const {
+    event: "{{.FeatureName}}",
+    description: "{{.FeatureNamePascal}} feature",
+    version: "0.1.0",
+    enabled: true
+}
+
+feature {{.FeatureName}} {
+  start: InitialState
+
+  state InitialState(input) {
+    action services/common/response.ResponseValue(value: "InitialState", statusCode: 200) as InitialResult
+    on success -> FinalState(InitialResult)
+  }
+
+  state FinalState(InitialResult) {
+    action services/common/response.ResponseValue(value: "FinalState", statusCode: 200) as FinalResult
+    end ok
+  }
+}

@@ -1,0 +1,120 @@
+module example
+
+import services/common
+
+const {
+    event: "greet",
+    description: "A simple hello world workflow example",
+    version: "1.0.0",
+    maxRetries: 3,
+    enabled: true,
+    cfg: {
+        apiEndpoint: "https://api.example.com",
+        timeout: 30000,
+        retries: 3,
+        msg: "System check complete",
+        headers: [
+            { key: "Content-Type", value: "application/json" },
+            { key: "Accept", value: "application/json" }
+        ]
+    }
+}
+
+solution example_solution {
+  start: CheckSystem
+
+  state CheckSystem {
+    action wsl_hello_world/example.example(name: "TestUser")
+    end ok
+  }
+}
+
+feature example_project {
+  start: CheckSystem
+
+  state CheckSystem(name) {
+    action wsl_hello_world/example.example(name: $name) as CheckResult
+    on success -> FinalState
+  }
+
+  state FinalState(CheckResult) {
+    action wsl_hello_world/example.finish_example(name: $CheckResult.name)
+    end ok
+  }
+}
+
+workflow example {
+  start: CheckSystem
+
+  state CheckSystem {
+    action services/common/response.Response(value: $constants.cfg.msg, statusCode: 200) as CheckResult
+    on success -> ProcessResult
+  }
+
+  state ProcessResult {
+    action services/common/response.Response(value: "Processing result", statusCode: 200) as ProcessedResult
+    on success -> FinalState
+  }
+
+  state FinalState {
+    action services/common/response.Response(value: "Workflow completed successfully", statusCode: 200) as FinalResult
+    end ok
+  }
+}
+
+workflow finish_example {
+  start: FinishCheckSystem
+
+  state FinishCheckSystem {
+    action services/common/response.Response(value: $constants.cfg.msg, statusCode: 200) as CheckResult
+    on success -> FinalState
+  }
+
+  state FinalState {
+    action services/common/response.Response(value: "Workflow completed successfully", statusCode: 200) as FinalResult
+    end ok
+  }
+}
+
+workflow wsl_hello_world {
+  start: Hello
+
+  state Hello {
+    action converse/speak.Say(on: message, v: {response: $constants.event, statusCode: 202}) as ResponseAsValue
+    on success -> MassiveHello(ResponseAsValue)
+  }
+
+  state MassiveHello {
+    action converse/speak.Say(on: "message", v: [
+        {
+            response: [
+                {
+                    event: $constants.event,
+                    code: "Code202"
+                }
+            ],
+            statusCode: 202
+        }
+    ]) as ResponseAsValue
+    on success -> Response(ResponseAsValue)
+  }
+
+  state Response(ResponseAsValue) {
+    action services/common/response.Response(value: $ResponseAsValue.message[0].response[0].event, statusCode: 202) as FinalResult
+    end ok
+  }
+}
+
+workflow workflow_name {
+  start: InitialState
+
+  state InitialState {
+    action services/common/response.Response(value: "InitialState successfully", statusCode: 200) as FinalResult
+    on success -> FinalState
+  }
+
+  state FinalState {
+    action services/common/response.Response(value: "FinalState successfully", statusCode: 200) as FinalResult
+    end ok
+  }
+}

@@ -1,0 +1,67 @@
+module when_examples
+
+import services/common
+
+const {
+    version: "1.0.0",
+    maxRetries: 3,
+    enabled: true
+}
+
+// This workflow demonstrates when expression syntax
+// Note: Runtime evaluation of when expressions is not yet implemented
+// This file is for parser testing only
+
+workflow conditional_example {
+  start: CheckVersion
+
+  state CheckVersion {
+    action services/common/response.Response(value: "Checking version", statusCode: 200) as VersionCheck
+    on success when $constants.version == "1.0.0" -> VersionOneHandler
+    on success when $constants.version == "2.0.0" -> VersionTwoHandler
+    on success -> DefaultHandler
+  }
+
+  state VersionOneHandler {
+    action services/common/response.Response(value: "Version 1.0.0 detected", statusCode: 200) as V1Result
+    on success when $constants.enabled == true -> ProcessEnabled
+    on success when $constants.enabled == false -> ProcessDisabled
+  }
+
+  state VersionTwoHandler {
+    action services/common/response.Response(value: "Version 2.0.0 detected", statusCode: 200) as V2Result
+    on success -> FinalState(V2Result)
+  }
+
+  state DefaultHandler {
+    action services/common/response.Response(value: "Unknown version", statusCode: 400) as DefaultResult
+    on success -> FinalState(DefaultResult)
+  }
+
+  state ProcessEnabled {
+    action services/common/response.Response(value: "Processing enabled workflow", statusCode: 200) as EnabledResult
+    on success when $constants.maxRetries > 2 -> HighRetryPath(EnabledResult)
+    on success when $constants.maxRetries <= 2 -> LowRetryPath(EnabledResult)
+  }
+
+  state ProcessDisabled {
+    action services/common/response.Response(value: "Processing disabled workflow", statusCode: 403) as DisabledResult
+    on success -> FinalState(DisabledResult)
+  }
+
+  state HighRetryPath(EnabledResult) {
+    action services/common/response.Response(value: "High retry configuration", statusCode: 200) as HighRetryResult
+    on success -> FinalState(HighRetryResult)
+  }
+
+  state LowRetryPath(EnabledResult) {
+    action services/common/response.Response(value: "Low retry configuration", statusCode: 200) as LowRetryResult
+    on success -> FinalState(LowRetryResult)
+  }
+
+  state FinalState(Result) {
+    action services/common/response.Response(value: $Result.value, statusCode: $Result.statusCode|int)
+    end ok
+  }
+}
+

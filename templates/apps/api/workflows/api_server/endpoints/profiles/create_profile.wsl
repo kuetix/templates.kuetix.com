@@ -1,0 +1,60 @@
+workflow create_profile {
+  start: ValidateAuth
+
+  state ValidateAuth {
+    action auth/jwt.ExtractTokenFromHeader(
+      authHeader: $headers.Authorization
+    ) as TokenExtract
+    on success -> ValidateToken
+    on error -> Unauthorized
+  }
+
+  state ValidateToken {
+    action auth/jwt.ValidateToken(
+      tokenString: $TokenExtract.response.token
+    ) as UserInfo
+    on success -> CreateProfile
+    on error -> Unauthorized
+  }
+
+  state CreateProfile {
+    action profiles/profiles.CreateProfile(
+      userId: $UserInfo.response.userId,
+      username: $json.username,
+      email: $json.email,
+      fullName: $json.fullName,
+      bio: $json.bio,
+      avatar: $json.avatar,
+      location: $json.location,
+      website: $json.website,
+      company: $json.company,
+      socialLinks: $json.socialLinks,
+    ) as ProfileResult
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $ProfileResult.response,
+      statusCode: 201
+    ) as Response
+    end ok
+  }
+
+  state Unauthorized {
+    action services/common/response.Response(
+      value: {error: "Unauthorized: Valid JWT token required"},
+      statusCode: 401
+    ) as ErrorResponse
+    end fail
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 500
+    ) as ErrorResponse
+    end fail
+  }
+}

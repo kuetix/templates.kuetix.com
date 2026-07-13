@@ -1,0 +1,40 @@
+workflow get_workflow {
+  start: GetToken
+
+  state GetToken {
+    action auth/jwt.GetToken(authHeader: $headers.Authorization) as Token
+    on success -> _
+    on error -> Failed
+  }
+
+  state GetWorkflow {
+    action workflows/workflows.GetWorkflow(name: $url.name??qs.name, userId: $Token.userId) as WorkflowResult
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $WorkflowResult??"{}",
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Unauthorized {
+    action services/common/response.Response(
+      value: {error: "Unauthorized: Valid JWT token required"},
+      statusCode: 401
+    ) as ErrorResponse
+    end fail
+  }
+
+  state Failed {
+    // statusCode 0 keeps whatever code the failing transition set (404, 500, …)
+    action services/common/response.Response(
+      value: $WorkflowResult??{error: "An unexpected error occurred"},
+      statusCode: 0
+    ) as ErrorResponse
+    end fail
+  }
+}

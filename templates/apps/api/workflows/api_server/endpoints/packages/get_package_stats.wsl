@@ -1,0 +1,28 @@
+workflow get_package_stats {
+  start: GetPackageStats
+
+  state GetPackageStats {
+    action packages/packages.GetPackageStats(
+      name: $json.name,
+      version: $json.version
+    ) as StatsResult
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $StatsResult.response,
+      statusCode: 200
+    ) as Response
+    end ok
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: {error: $error.message},
+      statusCode: 404
+    ) as ErrorResponse
+    end fail
+  }
+}

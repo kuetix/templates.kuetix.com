@@ -7,8 +7,12 @@ This directory contains all templates used by the `kue init` command to generate
 ```
 templates/
 ├── apps/               # Application type templates
-│   ├── api/           # API server template
-│   ├── cli/           # CLI application template
+│   ├── api/           # Full API server template (from kuetix/api): cmd/, embed.go,
+│   │                  # internal/, modules/ (all transitions + generated caches),
+│   │                  # workflows/ (api_server endpoints, routes, examples)
+│   ├── cli/           # Full CLI application template (from kuetix/kue): cmd/, embed.go,
+│   │                  # modules/ (all transitions + generated caches),
+│   │                  # workflows/cli (commands, usage texts)
 │   ├── consumer/      # AMQP consumer template
 │   └── service/       # Background service template
 ├── config/            # Configuration file templates
@@ -21,13 +25,21 @@ templates/
 │   ├── go.mod.tmpl
 │   ├── kuetix.json.tmpl
 │   └── runner.sh.tmpl
+├── kue/               # Source-faithful kue CLI bundle
+│   ├── cmd/           # kue command entrypoints
+│   ├── modules/       # kue module bootstrap files
+│   ├── runtime/       # checked-in runtime workflow assets
+│   └── workflows/     # embedded CLI workflows and usage files
 ├── modules/           # Module templates
 │   └── transitions/   # Transition module templates
 │       └── example.go.tmpl
 └── workflows/         # Workflow templates
     ├── common/        # Basic workflow examples
+    ├── feature.wsl.tmpl
     ├── features/      # Feature workflow examples
-    └── solutions/     # Solution workflow examples
+    ├── solution.wsl.tmpl
+    ├── solutions/     # Solution workflow examples
+    └── workflow.wsl.tmpl
 ```
 
 ## Template Variables
@@ -45,18 +57,34 @@ When initializing a new project, the following files are generated:
 
 ### For All App Types
 - **Configuration files**: go.mod, Makefile, .gitignore, README.md, Dockerfile, docker-compose.yml
-- **Runner script**: runner.sh for easy development workflow
 - **Example transition**: modules/services/example/transitions/example.go
 
 ### For Package Type
 - **Workflows**: Example workflow, feature, and solution files
 - **Package metadata**: kuetix.json for package management
 
+## Kue Bundle
+
+The `templates/kue/` tree contains the actual checked-in `kue` CLI assets copied from the source project:
+
+- `cmd/cli/main.go`
+- `cmd/modules/main.go`
+- `embed.go`
+- `Makefile`
+- `install.sh`
+- `modules/modules.go`
+- `workflows/**`
+- `runtime/bin/workflows/**`
+
+This bundle is intended as a source-faithful reference template for the `kue` CLI layout. Unlike the generic app templates above, it follows the real `kue` repository structure and Makefile-based workflow.
+
 ### For Specific App Types
-- **CLI**: Command-line application in cmd/cli/main.go
-- **API**: HTTP API server in cmd/api/main.go
+- **CLI**: Full workflow-driven CLI application mirrored from the `kue` source: `cmd/cli/main.go`, `embed.go`, all transition modules under `modules/` (including the generated `di.go`/`meta.go`/`modules.json` caches) and all `workflows/cli/**` command workflows and usage texts. Files that reference the Go module path are `.tmpl` (rendered with `{{.ProjectName}}`); WSL/usage files are copied verbatim. The root package is named `app` and is imported as `app "{{.ProjectName}}"`.
+- **API**: Full workflow-driven HTTP API server mirrored from the `kuetix/api` source: `cmd/api/main.go`, `embed.go`, `internal/`, all transition modules under `modules/` (with generated caches) and all `workflows/**` (api_server startup/routes/endpoints plus examples). Same `.tmpl` conventions as the CLI template.
 - **Consumer**: AMQP consumer in cmd/consumer/main.go
 - **Service**: Background service in cmd/service/main.go
+
+The generated caches (`modules/di.go`, `modules/meta.go`, `modules/modules.json`) are shipped pre-rendered so a freshly scaffolded project builds without running `kue update`; regenerate them after any transition change as usual.
 
 ## Transition Templates
 

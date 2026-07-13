@@ -1,0 +1,51 @@
+module solution_test
+
+import services/common
+
+// A simple workflow that sets a value in context
+workflow step1 {
+  start: SetValue
+
+  state SetValue {
+    action services/common/response.Response(value: "Step 1 executed", statusCode: 200) as result
+    on success -> End
+  }
+
+  state End {
+    end ok
+  }
+}
+
+// Another simple workflow that reads and updates context
+workflow step2 {
+  start: ReadValue
+
+  state ReadValue {
+    action services/common/response.Response(value: "Step 2 executed", statusCode: 200) as result
+    on success -> End
+  }
+
+  state End {
+    end ok
+  }
+}
+
+// Solution that orchestrates multiple workflows with shared context
+solution solution_test {
+  start: RunStep1
+
+  state RunStep1 {
+    action workflow step1
+    on success -> RunStep2
+  }
+
+  state RunStep2 {
+    action workflow step2
+    on success -> Complete
+  }
+
+  state Complete {
+    action services/common/response.Response(value: "Solution completed", statusCode: 200) as final_result
+    end ok
+  }
+}

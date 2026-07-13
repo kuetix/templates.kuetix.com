@@ -1,0 +1,39 @@
+workflow create_workflow {
+  start: GetToken
+
+  state GetToken {
+    action auth/jwt.GetToken(authHeader: $headers.Authorization) as Token
+    on success -> _
+    on error -> Failed
+  }
+
+  state CreateWorkflow {
+    action workflows/workflows.CreateWorkflow(payload: $json, userId: $Token.userId, username: $Token.username) as WorkflowResult
+    on success -> FormatResponse
+    on error -> Failed
+  }
+
+  state FormatResponse {
+    action services/common/response.Response(
+      value: $WorkflowResult??"Created workflow successfully",
+      statusCode: 201
+    ) as Response
+    end ok
+  }
+
+  state Unauthorized {
+    action services/common/response.Response(
+      value: {error: "Unauthorized: Valid JWT token required"},
+      statusCode: 401
+    ) as ErrorResponse
+    end fail
+  }
+
+  state Failed {
+    action services/common/response.Response(
+      value: "<<WorkflowResult??error.message??'Failed to create workflow'>>",
+      statusCode: $WorkflowResult.StatusCode??500
+    ) as ErrorResponse
+    end fail
+  }
+}
